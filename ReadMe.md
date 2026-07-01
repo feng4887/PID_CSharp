@@ -12,7 +12,7 @@ The **C# PID Simulator** is a Windows desktop application developed using modern
 - **Programming Language:** C#
 - **IDE:** Microsoft Visual Studio 2022
 - **UI Framework:** Windows Forms (WinForms)
-- **Target Platform:** Windows 10 / Windows 11 (x64)
+- **Target Platform:** Windows7 / Windows 10 / Windows 11 (x64)
 
 ### **Code Overview**
 
