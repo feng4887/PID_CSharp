@@ -1,0 +1,23 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256">
+  <defs>
+    <linearGradient id="bg" x1="34" y1="24" x2="218" y2="232" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#174d7d"/>
+      <stop offset="1" stop-color="#0b253f"/>
+    </linearGradient>
+    <linearGradient id="water" x1="74" y1="106" x2="160" y2="192" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#6ee7ff"/>
+      <stop offset="1" stop-color="#147dcc"/>
+    </linearGradient>
+  </defs>
+  <rect x="14" y="14" width="228" height="228" rx="44" fill="url(#bg)"/>
+  <path d="M54 76h28v18H54zM170 170h34v18h-34z" fill="#9fd8ff" opacity=".85"/>
+  <rect x="80" y="58" width="92" height="142" rx="12" fill="#f8fbff" stroke="#d7efff" stroke-width="8"/>
+  <path d="M92 136c14-12 27 10 42-1 12-9 21-10 28-2v52H92z" fill="url(#water)"/>
+  <path d="M93 136c14-12 27 10 42-1 12-9 21-10 28-2" fill="none" stroke="#b9f4ff" stroke-width="7" stroke-linecap="round"/>
+  <path d="M58 84h22M172 179h30" fill="none" stroke="#d7efff" stroke-width="10" stroke-linecap="round"/>
+  <path d="M55 217c34-62 52-115 82-113 20 1 29 26 45 53 8 14 16 26 29 36" fill="none" stroke="#ffd84a" stroke-width="13" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M55 217c34-62 52-115 82-113 20 1 29 26 45 53 8 14 16 26 29 36" fill="none" stroke="#7c4d00" stroke-width="4" stroke-linecap="round" stroke-linejoin="round" opacity=".45"/>
+  <circle cx="209" cy="194" r="18" fill="#37d67a" stroke="#e6fff1" stroke-width="6"/>
+  <path d="M198 194l8 8 15-18" fill="none" stroke="#053b1d" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/>
+  <text x="128" y="48" text-anchor="middle" font-family="Segoe UI, Arial, sans-serif" font-size="33" font-weight="800" fill="#ffffff">PID</text>
+</svg>
