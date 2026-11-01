@@ -15,13 +15,10 @@ namespace pid_loop_CSharp
         // Timer (simulation tick)
         private System.Windows.Forms.Timer timer1;
 
-        // Sliders
-        private VScrollBar vScrollSP;          // Setpoint (SP)   VScroll1
-        private HScrollBar hScrollInlet;       // Inlet valve     HScroll1
-        private HScrollBar hScrollOutlet;      // Outlet valve    HScroll2
-        private Panel pnlSPScrollBorder;
-        private Panel pnlInletScrollBorder;
-        private Panel pnlOutletScrollBorder;
+        // Sliders (TrackBar)
+        private TrackBar trkSP;                // Setpoint (SP)
+        private TrackBar trkInlet;             // Inlet valve
+        private TrackBar trkOutlet;            // Outlet valve
 
         // Text boxes
         private TextBox txtPV;                 // Process variable readout 
@@ -98,12 +95,9 @@ namespace pid_loop_CSharp
             mnEnglish = new ToolStripMenuItem();
             mnChinese = new ToolStripMenuItem();
             timer1 = new System.Windows.Forms.Timer(components);
-            vScrollSP = new VScrollBar();
-            hScrollInlet = new HScrollBar();
-            hScrollOutlet = new HScrollBar();
-            pnlSPScrollBorder = new Panel();
-            pnlInletScrollBorder = new Panel();
-            pnlOutletScrollBorder = new Panel();
+            trkSP = new TrackBar();
+            trkInlet = new TrackBar();
+            trkOutlet = new TrackBar();
             txtPV = new TextBox();
             txtGain = new TextBox();
             txtReset = new TextBox();
@@ -205,60 +199,42 @@ namespace pid_loop_CSharp
             // timer1
             // 
             timer1.Tick += Timer1_Tick;
-            // 
-            // vScrollSP
-            // 
-            vScrollSP.LargeChange = 100;
-            vScrollSP.Location = new Point(3, 185);
-            vScrollSP.Maximum = 3199;
-            vScrollSP.Name = "vScrollSP";
-            vScrollSP.Size = new Size(20, 440);
-            vScrollSP.TabIndex = 22;
-            vScrollSP.ValueChanged += VScrollSP_ValueChanged;
-            // 
-            // hScrollInlet
-            // 
-            hScrollInlet.Location = new Point(18, 273);
-            hScrollInlet.Maximum = 109;
-            hScrollInlet.Name = "hScrollInlet";
-            hScrollInlet.Size = new Size(140, 20);
-            hScrollInlet.TabIndex = 14;
-            hScrollInlet.Value = 100;
-            hScrollInlet.ValueChanged += HScrollInlet_ValueChanged;
-            // 
-            // hScrollOutlet
-            // 
-            hScrollOutlet.Location = new Point(23, 311);
-            hScrollOutlet.Maximum = 109;
-            hScrollOutlet.Name = "hScrollOutlet";
-            hScrollOutlet.Size = new Size(140, 20);
-            hScrollOutlet.TabIndex = 9;
-            hScrollOutlet.ValueChanged += HScrollOutlet_ValueChanged;
-            // 
-            // pnlSPScrollBorder
-            // 
-            pnlSPScrollBorder.BackColor = Color.FromArgb(188, 204, 220);
-            pnlSPScrollBorder.Location = new Point(455, 78);
-            pnlSPScrollBorder.Name = "pnlSPScrollBorder";
-            pnlSPScrollBorder.Size = new Size(26, 446);
-            pnlSPScrollBorder.TabIndex = 47;
-            // 
-            // pnlInletScrollBorder
-            // 
-            pnlInletScrollBorder.BackColor = Color.FromArgb(188, 204, 220);
-            pnlInletScrollBorder.Location = new Point(12, 97);
-            pnlInletScrollBorder.Name = "pnlInletScrollBorder";
-            pnlInletScrollBorder.Size = new Size(146, 26);
-            pnlInletScrollBorder.TabIndex = 48;
-            // 
-            // pnlOutletScrollBorder
-            // 
-            pnlOutletScrollBorder.BackColor = Color.FromArgb(188, 204, 220);
-            pnlOutletScrollBorder.Location = new Point(205, 616);
-            pnlOutletScrollBorder.Name = "pnlOutletScrollBorder";
-            pnlOutletScrollBorder.Size = new Size(146, 26);
-            pnlOutletScrollBorder.TabIndex = 49;
-            // 
+            //
+            // trkSP
+            //
+            trkSP.LargeChange = 100;
+            trkSP.Location = new Point(450, 78);
+            trkSP.Maximum = 3100;
+            trkSP.Name = "trkSP";
+            trkSP.Orientation = Orientation.Vertical;
+            trkSP.Size = new Size(45, 446);
+            trkSP.TabIndex = 22;
+            trkSP.TickFrequency = 310;
+            trkSP.TickStyle = TickStyle.TopLeft;
+            trkSP.Value = 1500;
+            trkSP.ValueChanged += TrkSP_ValueChanged;
+            //
+            // trkInlet
+            //
+            trkInlet.Location = new Point(15, 97);
+            trkInlet.Maximum = 100;
+            trkInlet.Name = "trkInlet";
+            trkInlet.Size = new Size(140, 45);
+            trkInlet.TabIndex = 14;
+            trkInlet.TickFrequency = 10;
+            trkInlet.Value = 100;
+            trkInlet.ValueChanged += TrkInlet_ValueChanged;
+            //
+            // trkOutlet
+            //
+            trkOutlet.Location = new Point(205, 616);
+            trkOutlet.Maximum = 100;
+            trkOutlet.Name = "trkOutlet";
+            trkOutlet.Size = new Size(140, 45);
+            trkOutlet.TabIndex = 9;
+            trkOutlet.TickFrequency = 10;
+            trkOutlet.ValueChanged += TrkOutlet_ValueChanged;
+            //
             // txtPV
             // 
             txtPV.Font = new Font("Consolas", 11F, FontStyle.Bold);
@@ -341,7 +317,7 @@ namespace pid_loop_CSharp
             // 
             lblInletVal.BorderStyle = BorderStyle.FixedSingle;
             lblInletVal.Font = new Font("Consolas", 11F, FontStyle.Bold);
-            lblInletVal.Location = new Point(15, 127);
+            lblInletVal.Location = new Point(15, 146);
             lblInletVal.Name = "lblInletVal";
             lblInletVal.Size = new Size(45, 25);
             lblInletVal.TabIndex = 15;
@@ -352,7 +328,7 @@ namespace pid_loop_CSharp
             // 
             lblOutletVal.BorderStyle = BorderStyle.FixedSingle;
             lblOutletVal.Font = new Font("Consolas", 11F, FontStyle.Bold);
-            lblOutletVal.Location = new Point(205, 646);
+            lblOutletVal.Location = new Point(205, 664);
             lblOutletVal.Name = "lblOutletVal";
             lblOutletVal.Size = new Size(45, 25);
             lblOutletVal.TabIndex = 10;
@@ -466,7 +442,7 @@ namespace pid_loop_CSharp
             // lblSupplyMaxInlet
             // 
             lblSupplyMaxInlet.ForeColor = Color.Blue;
-            lblSupplyMaxInlet.Location = new Point(65, 130);
+            lblSupplyMaxInlet.Location = new Point(65, 150);
             lblSupplyMaxInlet.Name = "lblSupplyMaxInlet";
             lblSupplyMaxInlet.Size = new Size(110, 20);
             lblSupplyMaxInlet.TabIndex = 16;
@@ -492,7 +468,7 @@ namespace pid_loop_CSharp
             // lblSupplyMaxOutlet
             // 
             lblSupplyMaxOutlet.ForeColor = Color.Blue;
-            lblSupplyMaxOutlet.Location = new Point(255, 651);
+            lblSupplyMaxOutlet.Location = new Point(255, 668);
             lblSupplyMaxOutlet.Name = "lblSupplyMaxOutlet";
             lblSupplyMaxOutlet.Size = new Size(110, 20);
             lblSupplyMaxOutlet.TabIndex = 11;
@@ -672,21 +648,18 @@ namespace pid_loop_CSharp
             Controls.Add(lblActualLevel);
             Controls.Add(lblOutletValveTitle);
             Controls.Add(lblOutletRange);
-            Controls.Add(pnlOutletScrollBorder);
-            Controls.Add(hScrollOutlet);
+            Controls.Add(trkOutlet);
             Controls.Add(lblOutletVal);
             Controls.Add(lblSupplyMaxOutlet);
             Controls.Add(lblTitleManualValve);
             Controls.Add(lblInletRange);
-            Controls.Add(pnlInletScrollBorder);
-            Controls.Add(hScrollInlet);
+            Controls.Add(trkInlet);
             Controls.Add(lblInletVal);
             Controls.Add(lblSupplyMaxInlet);
             Controls.Add(pnlTankScene);
             Controls.Add(lblSPBig);
             Controls.Add(lblSPVal);
-            Controls.Add(pnlSPScrollBorder);
-            Controls.Add(vScrollSP);
+            Controls.Add(trkSP);
             Controls.Add(btnManual);
             Controls.Add(btnAuto);
             Controls.Add(ledManual);

@@ -104,7 +104,6 @@ namespace pid_loop_CSharp
     ///  Liters 
     /// </summary>
         private const double TankCapacity = 3100; //
-        private const int SetpointMaximum = 3100;
 
     // Animation phase counters, advanced each tick to make the inlet/outlet
     // water streams flow.
@@ -138,7 +137,6 @@ namespace pid_loop_CSharp
 
         private void frmMain_Load(object sender, EventArgs e)
         {
-            ConfigureScrollBackgrounds();
             ConfigurePidBlockSvg();
             _language = LoadLanguage();
             if (!DesignMode)
@@ -150,9 +148,9 @@ namespace pid_loop_CSharp
             supply = 2000;
             lblSupply.Text = supply.ToString("0");
 
-            hScrollInlet.Value = 100;
-            lblInletVal.Text = hScrollInlet.Value.ToString();
-            invalve = InletFlow(hScrollInlet.Value);
+            trkInlet.Value = 100;
+            lblInletVal.Text = trkInlet.Value.ToString();
+            invalve = InletFlow(trkInlet.Value);
 
             outvalve = 0;
             lblOutletVal.Text = "0";
@@ -161,15 +159,15 @@ namespace pid_loop_CSharp
             // Start in AUTO mode
             SetModeLeds(manualOn: false, autoOn: true);
             mode = 1;
-            hScrollOutlet.Enabled = false;
+            trkOutlet.Enabled = false;
 
             // PID parameters from the text boxes
             gain = ParseParam(txtGain);
             reset = ParseParam(txtReset);
             rate = ParseParam(txtRate);
 
-            vScrollSP.Value = SetpointToScrollValue(1500);
-            sp = ScrollValueToSetpoint(vScrollSP.Value);
+            trkSP.Value = 1500;
+            sp = trkSP.Value;
             pnlTankScene.Invalidate();   // draw the initial setpoint line
             lblSPVal.Text = sp.ToString("0");
 
@@ -216,14 +214,14 @@ namespace pid_loop_CSharp
         {
             SetModeLeds(manualOn: true, autoOn: false);
             mode = 0;
-            hScrollOutlet.Enabled = true;
+            trkOutlet.Enabled = true;
         }
 
         private void BtnAuto_Click(object sender, EventArgs e)    // Command2
         {
             SetModeLeds(manualOn: false, autoOn: true);
             mode = 1;
-            hScrollOutlet.Enabled = false;
+            trkOutlet.Enabled = false;
         }
 
         private void BtnUnstable_Click(object sender, EventArgs e) // Command3
@@ -243,40 +241,40 @@ namespace pid_loop_CSharp
 
         #endregion //[Button handlers]
 
-        #region [Scroll handlers]
-        private void VScrollSP_ValueChanged(object sender, EventArgs e)
+        #region [Slider handlers]
+        private void TrkSP_ValueChanged(object sender, EventArgs e)
         {
-            if (vScrollSP == null)
+            if (trkSP == null)
                 return;
 
-            sp = ScrollValueToSetpoint(vScrollSP.Value);
+            sp = trkSP.Value;
             if (lblSPVal != null)
                 lblSPVal.Text = sp.ToString("0");
             if (pnlTankScene != null)
                 pnlTankScene.Invalidate();  // redraw the setpoint line in the scene
         }
 
-        private void HScrollInlet_ValueChanged(object sender, EventArgs e)
+        private void TrkInlet_ValueChanged(object sender, EventArgs e)
         {
-            if (hScrollInlet == null)
+            if (trkInlet == null)
                 return;
 
             if (lblInletVal != null)
-                lblInletVal.Text = hScrollInlet.Value.ToString();
-            invalve = InletFlow(hScrollInlet.Value);
+                lblInletVal.Text = trkInlet.Value.ToString();
+            invalve = InletFlow(trkInlet.Value);
         }
 
-        private void HScrollOutlet_ValueChanged(object sender, EventArgs e)
+        private void TrkOutlet_ValueChanged(object sender, EventArgs e)
         {
-            if (hScrollOutlet == null)
+            if (trkOutlet == null)
                 return;
 
             if (lblOutletVal != null)
-                lblOutletVal.Text = hScrollOutlet.Value.ToString();
-            outvalve = OutletFlow(hScrollOutlet.Value);
+                lblOutletVal.Text = trkOutlet.Value.ToString();
+            outvalve = OutletFlow(trkOutlet.Value);
         }
 
-        #endregion //[Scroll handlers]
+        #endregion //[Slider handlers]
 
         #region [Timer tick  (Timer1_Timer, 100 ms)]
         private void Timer1_Tick(object sender, EventArgs e)
@@ -299,7 +297,7 @@ namespace pid_loop_CSharp
 
             // Advance the inlet/outlet flow phases so the streams animate when
             // the corresponding valve is open.
-            if (hScrollInlet.Value > 0) _flowPhaseIn += 6f;
+            if (trkInlet.Value > 0) _flowPhaseIn += 6f;
             if (outValveOpen) _flowPhaseOut += 6f;
             _wavePhase += 0.18f;
 
@@ -309,7 +307,7 @@ namespace pid_loop_CSharp
             if (stability == 1)
             {
                 Watersupply();
-                invalve = InletFlow(hScrollInlet.Value);
+                invalve = InletFlow(trkInlet.Value);
             }
 
             if (mode == 1)
@@ -441,10 +439,10 @@ namespace pid_loop_CSharp
             int newVal = (int)Math.Round(100 - output);
             if (newVal < 0) newVal = 0;
             if (newVal > 100) newVal = 100;
-            if (newVal < hScrollOutlet.Minimum) newVal = hScrollOutlet.Minimum;
-            hScrollOutlet.Value = newVal;
-            lblOutletVal.Text = hScrollOutlet.Value.ToString();
-            outvalve = OutletFlow(hScrollOutlet.Value);
+            if (newVal < trkOutlet.Minimum) newVal = trkOutlet.Minimum;
+            trkOutlet.Value = newVal;
+            lblOutletVal.Text = trkOutlet.Value.ToString();
+            outvalve = OutletFlow(trkOutlet.Value);
 
             // feedback = feedback - (feedback - output) * reset / 60
             feedback = feedback - (feedback - output) * reset / 60;
@@ -474,7 +472,7 @@ namespace pid_loop_CSharp
         ///  
         /// rule: outlet stream shows only when outlet valve > 0 AND pv > 0.
         /// </summary>
-        private bool outValveOpen => (hScrollOutlet.Value > 0) && (pv > 0);
+        private bool outValveOpen => (trkOutlet.Value > 0) && (pv > 0);
 
         private void PnlTankScene_Paint(object sender, PaintEventArgs e)
         {
@@ -511,7 +509,7 @@ namespace pid_loop_CSharp
 
             int inletPipeY = tankTop + tankH / 6;
             int outletPipeY = tankBottom - 12;
-            bool inletOn = hScrollInlet.Value > 0;
+            bool inletOn = trkInlet.Value > 0;
 
             // ====================== TANK BODY ======================
             // outer shell
@@ -575,7 +573,7 @@ namespace pid_loop_CSharp
             g.DrawRectangle(Pens.Black, valveIn);
             g.FillRectangle(Brushes.SteelBlue, tankLeft - 3, inletY - 6, 8, 12);
 
-            string inletPct = hScrollInlet.Value.ToString() + "%";
+            string inletPct = trkInlet.Value.ToString() + "%";
             var inSz = g.MeasureString(inletPct, fontSm);
             g.DrawString(inletPct, fontSm, Brushes.Black,
                 valveIn.X + valveIn.Width / 2f - inSz.Width / 2f, valveIn.Y - 14);
@@ -607,7 +605,7 @@ namespace pid_loop_CSharp
             g.DrawRectangle(Pens.Black, valveOut);
             g.FillRectangle(Brushes.SteelBlue, tankRight - 5, outletY - 6, 8, 12);
 
-            string outletPct = hScrollOutlet.Value.ToString() + "%";
+            string outletPct = trkOutlet.Value.ToString() + "%";
             var outSz = g.MeasureString(outletPct, fontSm);
             g.DrawString(outletPct, fontSm, Brushes.Black,
                 valveOut.X + valveOut.Width / 2f - outSz.Width / 2f, valveOut.Y - 14);
@@ -628,22 +626,6 @@ namespace pid_loop_CSharp
         private void PnlTankScene_Resize(object sender, EventArgs e)
         {
             pnlTankScene.Invalidate();
-        }
-
-        private void ConfigureScrollBackgrounds()
-        {
-            AttachScrollToBackground(hScrollInlet, pnlInletScrollBorder);
-            AttachScrollToBackground(hScrollOutlet, pnlOutletScrollBorder);
-            AttachScrollToBackground(vScrollSP, pnlSPScrollBorder);
-        }
-
-        private static void AttachScrollToBackground(Control scrollBar, Control background)
-        {
-            if (scrollBar.Parent != background)
-                background.Controls.Add(scrollBar);
-
-            scrollBar.Location = new Point(3, 3);
-            scrollBar.BringToFront();
         }
 
         private void ConfigurePidBlockSvg()
@@ -886,30 +868,6 @@ namespace pid_loop_CSharp
 
         private static int ClampY(int v, int lo, int hi)
             => v < lo ? lo : (v > hi ? hi : v);
-
-        private int ScrollValueToSetpoint(int scrollValue)
-        {
-            int maxScrollValue = EffectiveSetpointScrollMaximum();
-            int clampedValue = scrollValue < vScrollSP.Minimum
-                ? vScrollSP.Minimum
-                : (scrollValue > maxScrollValue ? maxScrollValue : scrollValue);
-            return SetpointMaximum - clampedValue;
-        }
-
-        private int SetpointToScrollValue(int setpoint)
-        {
-            int clampedSetpoint = setpoint < 0
-                ? 0
-                : (setpoint > SetpointMaximum ? SetpointMaximum : setpoint);
-            int scrollValue = SetpointMaximum - clampedSetpoint;
-            int maxScrollValue = EffectiveSetpointScrollMaximum();
-            return scrollValue < vScrollSP.Minimum
-                ? vScrollSP.Minimum
-                : (scrollValue > maxScrollValue ? maxScrollValue : scrollValue);
-        }
-
-        private int EffectiveSetpointScrollMaximum()
-            => vScrollSP.Maximum - vScrollSP.LargeChange + 1;
 
         #endregion //[Helpers]
 
