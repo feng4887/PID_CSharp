@@ -1,7 +1,7 @@
 //=============================================================================
 // C# Simple PID Simulator
 // Description: Separate simulated calculation time from real IO scheduling.
-// Author: Jinwang DU / Codex
+// Author: Jinwang DU 
 // Date: 2026-11-02
 //=============================================================================
 using System;
