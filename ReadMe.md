@@ -2,7 +2,15 @@
 
 ## **Development Environment**
 
-The **C# PID Simulator** is a Windows desktop application developed using modern Microsoft technologies. It is intended as an educational tool for learning and experimenting with PID (Proportional–Integral–Derivative) control algorithms through a simulated water tank level control system.
+C# PID Water Tank Simulator brings feedback control to life. Watch a 3,100-liter tank fill, see the outlet valve respond, and discover how tuning changes overshoot, oscillation, and settling behavior.
+
+Built with C# and .NET 8 WinForms, this interactive teaching simulator lets you explore PI/PID control through practical experiments. Change the setpoint, adjust the inlet flow, introduce supply disturbances, or switch to manual control—and watch the response unfold.
+- Visual learning: Animated water flow, adjustable valves, and live liquid-level and valve-position trends.
+- A transparent PI/PID core: Anti-windup, filtered measurement derivative, optional measurement filtering, and bumpless manual/automatic switching.
+- Faster experiments: 10× simulation speed with independently configurable sampling times.
+- Repeatable results: Deterministic disturbances and numerical regression checks.
+- Bilingual interface: English and Chinese support.
+Designed for students, educators, and automation engineers who want to understand control behavior—and developers who want to explore the code behind it.
 
 ![](images/721241288046b1016de9a5e5a07fe13deb39b28565e1c7d2a3a5f6a3f9c3c87f.jpg)
 
