@@ -1,0 +1,13 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net8.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+  <ItemGroup>
+    <Compile Include="..\..\pid_loop_CSharp\PID_helper.cs" Link="PID_helper.cs" />
+    <Compile Include="..\..\pid_loop_CSharp\TankModel.cs" Link="TankModel.cs" />
+    <Compile Include="..\..\pid_loop_CSharp\PidSamplingSettings.cs" Link="PidSamplingSettings.cs" />
+  </ItemGroup>
+</Project>

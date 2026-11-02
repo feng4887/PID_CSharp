@@ -142,6 +142,9 @@ namespace pid_loop_CSharp
             label1 = new Label();
             textBoxInformation = new TextBox();
             menuStrip1.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)trkSP).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)trkInlet).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)trkOutlet).BeginInit();
             ((System.ComponentModel.ISupportInitialize)picGraphPV).BeginInit();
             ((System.ComponentModel.ISupportInitialize)picGraphOutput).BeginInit();
             SuspendLayout();
@@ -199,23 +202,23 @@ namespace pid_loop_CSharp
             // timer1
             // 
             timer1.Tick += Timer1_Tick;
-            //
+            // 
             // trkSP
-            //
+            // 
             trkSP.LargeChange = 100;
-            trkSP.Location = new Point(450, 78);
+            trkSP.Location = new Point(450, 96);
             trkSP.Maximum = 3100;
             trkSP.Name = "trkSP";
             trkSP.Orientation = Orientation.Vertical;
-            trkSP.Size = new Size(45, 446);
+            trkSP.Size = new Size(45, 381);
             trkSP.TabIndex = 22;
             trkSP.TickFrequency = 310;
             trkSP.TickStyle = TickStyle.TopLeft;
             trkSP.Value = 1500;
             trkSP.ValueChanged += TrkSP_ValueChanged;
-            //
+            // 
             // trkInlet
-            //
+            // 
             trkInlet.Location = new Point(15, 97);
             trkInlet.Maximum = 100;
             trkInlet.Name = "trkInlet";
@@ -224,9 +227,9 @@ namespace pid_loop_CSharp
             trkInlet.TickFrequency = 10;
             trkInlet.Value = 100;
             trkInlet.ValueChanged += TrkInlet_ValueChanged;
-            //
+            // 
             // trkOutlet
-            //
+            // 
             trkOutlet.Location = new Point(205, 616);
             trkOutlet.Maximum = 100;
             trkOutlet.Name = "trkOutlet";
@@ -234,7 +237,7 @@ namespace pid_loop_CSharp
             trkOutlet.TabIndex = 9;
             trkOutlet.TickFrequency = 10;
             trkOutlet.ValueChanged += TrkOutlet_ValueChanged;
-            //
+            // 
             // txtPV
             // 
             txtPV.Font = new Font("Consolas", 11F, FontStyle.Bold);
@@ -587,7 +590,7 @@ namespace pid_loop_CSharp
             // 
             // lblGraph100
             // 
-            lblGraph100.Location = new Point(821, 447);
+            lblGraph100.Location = new Point(826, 577);
             lblGraph100.Name = "lblGraph100";
             lblGraph100.Size = new Size(53, 18);
             lblGraph100.TabIndex = 41;
@@ -595,7 +598,7 @@ namespace pid_loop_CSharp
             // 
             // lblGraph0
             // 
-            lblGraph0.Location = new Point(821, 536);
+            lblGraph0.Location = new Point(826, 666);
             lblGraph0.Name = "lblGraph0";
             lblGraph0.Size = new Size(53, 18);
             lblGraph0.TabIndex = 42;
@@ -694,6 +697,9 @@ namespace pid_loop_CSharp
             Load += frmMain_Load;
             menuStrip1.ResumeLayout(false);
             menuStrip1.PerformLayout();
+            ((System.ComponentModel.ISupportInitialize)trkSP).EndInit();
+            ((System.ComponentModel.ISupportInitialize)trkInlet).EndInit();
+            ((System.ComponentModel.ISupportInitialize)trkOutlet).EndInit();
             ((System.ComponentModel.ISupportInitialize)picGraphPV).EndInit();
             ((System.ComponentModel.ISupportInitialize)picGraphOutput).EndInit();
             ResumeLayout(false);

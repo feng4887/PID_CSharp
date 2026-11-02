@@ -32,8 +32,8 @@ namespace pid_loop_CSharp
                 Location = new Point(40, y),
                 Size = new Size(650, 40),
                 Text = zh
-                    ? "本程序用于演示工业场景中简化的 PID 控制回路，这里以水箱液位控制为例。"
-                    : "The objective of this program is to examine a simplified PID control loop used in an industrial setting, in this case, a water tank with level control."
+                    ? "本程序是具有规范 PI/PID 核心、支持可重复实验的水箱教学仿真器。"
+                    : "This water-tank teaching simulator provides a standard PI/PID core and repeatable numerical experiments."
             };
             y += 45;
 
@@ -62,8 +62,8 @@ namespace pid_loop_CSharp
                 Location = new Point(40, y),
                 Size = new Size(650, 50),
                 Text = zh
-                    ? "程序启动后默认进入自动控制模式，并使用一组较稳定的 PID 参数。你可以调整进水阀开度，观察系统如何调整出水阀以维持液位设定值。"
-                    : "When the program starts, the system is already placed into automatic mode with a somewhat stable setting for the PID algorithm. The operator can alter the inlet valve position and see how the computer adjusts the output valve to maintain the level setpoint."
+                    ? "程序以 10 倍速度演示，默认 PI 参数为 GAIN=12、RESET=6、RATE=0，用于观察超调、回摆与收敛。RESET/RATE 单位为仿真秒。"
+                    : "Runs at 10x speed with PI tuning GAIN=12, RESET=6, RATE=0 to demonstrate overshoot and decaying oscillation. RESET/RATE use simulated seconds."
             };
             y += 55;
 
@@ -72,8 +72,8 @@ namespace pid_loop_CSharp
                 Location = new Point(40, y),
                 Size = new Size(650, 50),
                 Text = zh
-                    ? "修改 PID 参数后，可以改变设定值（SP）制造扰动。趋势图会显示你对控制回路的整定效果。"
-                    : "When you make changes to the PID variables, cause an upset by changing the setpoint (SP). This will show you, via the graphs, how well you are \"tuning\" the control loop."
+                    ? "可与更平稳的 PI 参数 GAIN=30、RESET=80、RATE=0 对照。修改设定值（SP），通过趋势图比较两种整定的响应。"
+                    : "Compare with smoother PI tuning GAIN=30, RESET=80, RATE=0. Change the setpoint (SP) and use the trends to compare the two responses."
             };
             y += 55;
 
@@ -108,8 +108,8 @@ namespace pid_loop_CSharp
                 Location = new Point(40, y),
                 Size = new Size(650, 35),
                 Text = zh
-                    ? "比例（GAIN）：0-100%，根据误差（SP-PV）放大输出的程度。"
-                    : "Proportional (GAIN): 0-100%, how much to amplify the output based on the error (SP-PV)"
+                    ? "比例（GAIN）：范围 0-100；GAIN/100 表示每升误差对应的阀位百分点。"
+                    : "Proportional (GAIN): 0-100. GAIN/100 is outlet percentage points per liter of error."
             };
             y += 40;
 
@@ -118,8 +118,8 @@ namespace pid_loop_CSharp
                 Location = new Point(40, y),
                 Size = new Size(650, 35),
                 Text = zh
-                    ? "积分（RESET）：单位为秒，也可理解为重复修正误差的速度，用于消除 PV 与 SP 之间的静差。"
-                    : "Integral (RESET): In seconds, also called (repeats per minute) ... how many times it resets the error and re-evaluates the values. This removes the offset that occurs between the PV and SP."
+                    ? "积分（RESET）：积分时间 Ti，单位秒；越大积分越弱，0 表示关闭积分。用于消除液位静差。"
+                    : "Integral (RESET): Ti in seconds. Larger values weaken integral action; 0 disables it. Integral action removes steady-state level error."
             };
             y += 40;
 
@@ -128,8 +128,8 @@ namespace pid_loop_CSharp
                 Location = new Point(40, y),
                 Size = new Size(650, 35),
                 Text = zh
-                    ? "微分（RATE）：单位为秒，用于提前修正输出，适合存在滞后、响应较慢或对输出变化敏感的过程。"
-                    : "Derivative (RATE): In seconds ... the amount of time that it advances the output. This can be used to adjust processes that have lag, or are sluggish, or processes that are very sensitive to output changes."
+                    ? "微分（RATE）：微分时间 Td，单位秒；对测量液位的变化率进行滤波，0 表示关闭微分。"
+                    : "Derivative (RATE): Td in seconds, using the filtered rate of measured level change. 0 disables derivative action."
             };
             y += 45;
 

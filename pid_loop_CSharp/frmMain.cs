@@ -1,6 +1,8 @@
 using System;
+using System.Diagnostics;
 using System.Drawing;
 using System.IO;
+using System.Runtime.InteropServices;
 using System.Windows.Forms;
 //===========================================================================
 // summary:C# Simple PID Simulator - for PID study purpose.
@@ -14,19 +16,15 @@ namespace pid_loop_CSharp
     {
         #region [Define]
     /// <summary>
-    ///  inlet flow per tick
+    ///  inlet flow in liters per minute
     /// </summary>
         private double invalve = 0; 
 
     /// <summary>
-    /// outlet flow per tick
+    /// Current control mode; all simulation state is owned by the UI thread.
     /// </summary>
-        private double outvalve = 0; 
-
-    /// <summary>
-    ///  0 = manual, 1 = auto
-    /// </summary>
-        private int mode = 1;   
+        private enum ControlMode { Manual, Automatic }
+        private ControlMode mode = ControlMode.Automatic;
 
     /// <summary>
     /// 0 = stable supply, 1 = unstable
@@ -41,20 +39,20 @@ namespace pid_loop_CSharp
     /// <summary>
     /// proportional  (0..100)
     /// </summary>
-        private double gain = 30;       
+        private double gain = DefaultGain;
 
     /// <summary>
-    /// integral      (0..120 sec)
+    /// integral time Ti (0 disables integral action)
     /// </summary>
-        private double reset = 3;     
+        private double reset = DefaultIntegralTimeSeconds;
 
     /// <summary>
-    /// derivative    (0..120 sec)
+    /// derivative time Td (0 disables derivative action)
     /// </summary>
-        private double rate = 10;   
+        private double rate = DefaultDerivativeTimeSeconds;
 
     /// <summary>
-    /// controller output (0..100)
+    /// actual outlet opening command (0..100), before display rounding
     /// </summary>
         private double output = 0;      
                                         
@@ -69,41 +67,48 @@ namespace pid_loop_CSharp
         private double sp = 1500;       
 
     /// <summary>
-    /// derivative-filtered input
+    /// Display refresh is independent of simulation steps and real IO scheduling.
     /// </summary>
-        private double inputd = 0;    
-
-    /// <summary>
-    /// filtered derivative input
-    /// </summary>
-        private double inputdf = 0;  
-
-    /// <summary>
-    /// previous pv (for derivative)
-    /// </summary>
-        private double inputlast = 0;
-
-    /// <summary>
-    /// integral / reset accumulator
-    /// </summary>
-        private double feedback = 0; 
-
-    /// <summary>
-    /// derivative filter scaling
-    /// </summary>
-        private const double dfilter = 10;
+        private const int DisplayRefreshIntervalMilliseconds = 100;
+        // Match the VB demonstration pace while retaining the fixed calculation step.
+        private const double SimulationSpeedMultiplier = 10;
+        private const double TrendSampleSeconds =
+            DisplayRefreshIntervalMilliseconds / 1000.0 * SimulationSpeedMultiplier;
+        private const double DisturbanceSampleSeconds =
+            DisplayRefreshIntervalMilliseconds / 1000.0 * SimulationSpeedMultiplier;
+        private const double MaximumCatchUpSeconds = 1;
+        private const double DefaultGain = 12;
+        private const double DefaultIntegralTimeSeconds = 6;
+        private const double DefaultDerivativeTimeSeconds = 0;
+        private const int DisturbanceSeed = 20261102;
+        private readonly PidSamplingSettings _samplingSettings;
+        private double SimulationSampleSeconds => _samplingSettings.SimulationSampleSeconds;
+        private readonly PidController _pidController = new(new PidSettings(
+            DefaultGain, DefaultIntegralTimeSeconds, DefaultDerivativeTimeSeconds));
+        private readonly TankModel _tank = new();
+        private readonly Stopwatch _simulationClock = new();
+        private double _lastClockSeconds;
+        private double _pendingSimulationSeconds;
+        private double _trendElapsedSeconds;
+        private double _disturbanceElapsedSeconds;
+        private bool _isUpdatingOutletDisplay;
+        private bool _isAligningSetpointSlider;
+        private const int TankTopInset = 30;
+        private const int TankBottomInset = 62;
+        private const int TrackBarGetThumbRectangle = 0x0419;
+        private const int TrackBarGetChannelRectangle = 0x041A;
 
       // ---- scrolling trend buffers (101 entries) ----
         private readonly double[] pvgraph = new double[101];
         private readonly double[] outgraph = new double[101];
-        private readonly Random rnd = new Random();
+        private readonly Random rnd = new Random(DisturbanceSeed);
 
     // Reference geometry for the tank (kept here, not in the designer,
     // because the fill height is computed every tick).
     /// <summary>
     ///  Liters 
     /// </summary>
-        private const double TankCapacity = 3100; //
+        private const double TankCapacity = TankModel.DefaultCapacityLiters;
 
     // Animation phase counters, advanced each tick to make the inlet/outlet
     // water streams flow.
@@ -130,9 +135,21 @@ namespace pid_loop_CSharp
         #endregion //[Define]
 
         #region [Initialisation]
-        public frmMain()
+        public frmMain() : this(new PidSamplingSettings())
         {
+        }
+
+        public frmMain(PidSamplingSettings samplingSettings)
+        {
+            ArgumentNullException.ThrowIfNull(samplingSettings);
+            samplingSettings.Validate();
+            _samplingSettings = samplingSettings;
             InitializeComponent();
+            trkSP.HandleCreated += SetpointGeometryChanged;
+            pnlTankScene.HandleCreated += SetpointGeometryChanged;
+            trkSP.SizeChanged += SetpointGeometryChanged;
+            trkSP.DpiChangedAfterParent += SetpointGeometryChanged;
+            pnlTankScene.LocationChanged += SetpointGeometryChanged;
         }  
 
         private void frmMain_Load(object sender, EventArgs e)
@@ -141,6 +158,7 @@ namespace pid_loop_CSharp
             _language = LoadLanguage();
             if (!DesignMode)
                 FormLoad();
+            AlignSetpointSlider();
         }
 
         private void FormLoad()
@@ -152,19 +170,26 @@ namespace pid_loop_CSharp
             lblInletVal.Text = trkInlet.Value.ToString();
             invalve = InletFlow(trkInlet.Value);
 
-            outvalve = 0;
+            output = 0;
+            _tank.Reset(0);
+            pv = _tank.VolumeLiters;
             lblOutletVal.Text = "0";
             txtPV.Text = "0";
 
             // Start in AUTO mode
             SetModeLeds(manualOn: false, autoOn: true);
-            mode = 1;
+            mode = ControlMode.Automatic;
             trkOutlet.Enabled = false;
 
-            // PID parameters from the text boxes
-            gain = ParseParam(txtGain);
-            reset = ParseParam(txtReset);
-            rate = ParseParam(txtRate);
+            // Teaching defaults expose overshoot followed by a decaying oscillation.
+            txtGain.Text = DefaultGain.ToString();
+            txtReset.Text = DefaultIntegralTimeSeconds.ToString();
+            txtRate.Text = DefaultDerivativeTimeSeconds.ToString();
+            ReadPidParameters();
+            // Seed only the initial integral bias from the initial flow balance.
+            // Disturbance rejection still relies on feedback, not feedforward.
+            double initialBias = 100 * invalve / _tank.MaxOutletFlowLitersPerMinute;
+            _pidController.Reset(pv, Math.Clamp(initialBias, 0, 100));
 
             trkSP.Value = 1500;
             sp = trkSP.Value;
@@ -174,8 +199,14 @@ namespace pid_loop_CSharp
             // Clear the scrolling buffers
             Array.Clear(pvgraph, 0, pvgraph.Length);
             Array.Clear(outgraph, 0, outgraph.Length);
+            _pendingSimulationSeconds = 0;
+            _trendElapsedSeconds = 0;
+            _disturbanceElapsedSeconds = 0;
+            _lastClockSeconds = 0;
 
             ApplyLanguage();
+            timer1.Interval = DisplayRefreshIntervalMilliseconds;
+            _simulationClock.Restart();
             timer1.Start();
         }
 
@@ -212,20 +243,30 @@ namespace pid_loop_CSharp
         #region [Button handlers]
         private void BtnManual_Click(object sender, EventArgs e)  // Command1
         {
+            if (mode == ControlMode.Manual)
+                return;
+            ReadPidParameters();
+            _pidController.Track(sp, pv, output, SimulationSampleSeconds);
             SetModeLeds(manualOn: true, autoOn: false);
-            mode = 0;
+            mode = ControlMode.Manual;
             trkOutlet.Enabled = true;
         }
 
         private void BtnAuto_Click(object sender, EventArgs e)    // Command2
         {
+            if (mode == ControlMode.Manual)
+            {
+                ReadPidParameters();
+                _pidController.Track(sp, pv, output, SimulationSampleSeconds);
+            }
             SetModeLeds(manualOn: false, autoOn: true);
-            mode = 1;
+            mode = ControlMode.Automatic;
             trkOutlet.Enabled = false;
         }
 
         private void BtnUnstable_Click(object sender, EventArgs e) // Command3
         {
+            _disturbanceElapsedSeconds = 0;
             if (stability == 0)
             {
                 ledUnstable.BackColor = Color.Red;
@@ -237,6 +278,7 @@ namespace pid_loop_CSharp
             stability = 0;
             supply = 2000;
             lblSupply.Text = supply.ToString("0");
+            invalve = InletFlow(trkInlet.Value);
         }
 
         #endregion //[Button handlers]
@@ -266,12 +308,12 @@ namespace pid_loop_CSharp
 
         private void TrkOutlet_ValueChanged(object sender, EventArgs e)
         {
-            if (trkOutlet == null)
+            if (trkOutlet == null || _isUpdatingOutletDisplay)
                 return;
 
             if (lblOutletVal != null)
                 lblOutletVal.Text = trkOutlet.Value.ToString();
-            outvalve = OutletFlow(trkOutlet.Value);
+            output = trkOutlet.Value;
         }
 
         #endregion //[Slider handlers]
@@ -279,43 +321,95 @@ namespace pid_loop_CSharp
         #region [Timer tick  (Timer1_Timer, 100 ms)]
         private void Timer1_Tick(object sender, EventArgs e)
         {
-            // --- clamp + read PID parameters ( clamps Text2/3/4 each tick) ---
-            gain = ClampParam(txtGain, 0, 100);
-            reset = ClampParam(txtReset, 0, 120);
-            rate = ClampParam(txtRate, 0, 120);
-
-            // --- tank level integration ---
-            //  If pv < 3101 Then pv = pv + invalve
-            if (pv < 3101) pv += invalve;
-            //  If pv > 0 Then pv = pv - outvalve
-            if (pv > 0) pv -= outvalve;
-            if (pv < 0) pv = 0;
+            ReadPidParameters();
+            double now = _simulationClock.Elapsed.TotalSeconds;
+            double elapsed = now - _lastClockSeconds;
+            _lastClockSeconds = now;
+            if (elapsed > MaximumCatchUpSeconds)
+            {
+                // A long UI stall pauses simulation time instead of causing a
+                // large integration step or an unbounded burst of catch-up work.
+                Trace.TraceWarning("Tank simulation paused during a UI stall: {0:F3}s.",
+                    elapsed);
+                _pendingSimulationSeconds = 0;
+            }
+            else
+            {
+                _pendingSimulationSeconds += Math.Max(0, elapsed) * SimulationSpeedMultiplier;
+                while (_pendingSimulationSeconds + 1e-9 >= SimulationSampleSeconds)
+                {
+                    AdvanceSimulation();
+                    _pendingSimulationSeconds = Math.Max(0,
+                        _pendingSimulationSeconds - SimulationSampleSeconds);
+                }
+            }
 
             txtPV.Text = pv.ToString("0");
             lblError.Text = (sp - pv).ToString("0");
             lblSupply.Text = supply.ToString("0");
-
-            // Advance the inlet/outlet flow phases so the streams animate when
-            // the corresponding valve is open.
-            if (trkInlet.Value > 0) _flowPhaseIn += 6f;
-            if (outValveOpen) _flowPhaseOut += 6f;
-            _wavePhase += 0.18f;
-
-            // Repaint the tank scene (level + pipes + flowing water + SP line).
+            UpdateOutletDisplay();
             pnlTankScene.Invalidate();
-
-            if (stability == 1)
-            {
-                Watersupply();
-                invalve = InletFlow(trkInlet.Value);
-            }
-
-            if (mode == 1)
-                PidLoop();
-
-            // Repaint the two trend graphs
             picGraphPV.Invalidate();
             picGraphOutput.Invalidate();
+        }
+
+        /// <summary>Advances controller, plant and sampling by one fixed step.</summary>
+        private void AdvanceSimulation()
+        {
+            invalve = InletFlow(trkInlet.Value);
+            if (mode == ControlMode.Automatic)
+                PidLoop();
+            else
+                _pidController.Track(sp, pv, output, SimulationSampleSeconds);
+
+            _tank.Step(invalve, output, SimulationSampleSeconds);
+            pv = _tank.VolumeLiters;
+            // Keep supply changes near the VB cadence, independent of solver substeps.
+            if (stability == 1)
+            {
+                _disturbanceElapsedSeconds += SimulationSampleSeconds;
+                if (_disturbanceElapsedSeconds + 1e-9 >= DisturbanceSampleSeconds)
+                {
+                    _disturbanceElapsedSeconds -= DisturbanceSampleSeconds;
+                    Watersupply();
+                }
+            }
+            if (invalve > 0) _flowPhaseIn += 6f;
+            if (output > 0 && pv > 0) _flowPhaseOut += 6f;
+            _wavePhase += 0.18f;
+
+            _trendElapsedSeconds += SimulationSampleSeconds;
+            if (_trendElapsedSeconds + 1e-9 >= TrendSampleSeconds)
+            {
+                _trendElapsedSeconds -= TrendSampleSeconds;
+                Array.Copy(pvgraph, 1, pvgraph, 0, pvgraph.Length - 1);
+                Array.Copy(outgraph, 1, outgraph, 0, outgraph.Length - 1);
+                pvgraph[^1] = pv;
+                outgraph[^1] = output;
+            }
+        }
+
+        /// <summary>Updates display rounding without quantizing the plant input.</summary>
+        private void UpdateOutletDisplay()
+        {
+            _isUpdatingOutletDisplay = true;
+            try
+            {
+                trkOutlet.Value = (int)Math.Round(output);
+                lblOutletVal.Text = trkOutlet.Value.ToString();
+            }
+            finally
+            {
+                _isUpdatingOutletDisplay = false;
+            }
+        }
+
+        private void ReadPidParameters()
+        {
+            gain = ClampParam(txtGain, 0, 100, gain);
+            reset = ClampParam(txtReset, 0, 120, reset);
+            rate = ClampParam(txtRate, 0, 120, rate);
+            _pidController.Configure(new PidSettings(gain, reset, rate));
         }
         #endregion //[Timer tick]
 
@@ -417,35 +511,12 @@ namespace pid_loop_CSharp
         #endregion //[Language]
 
         // =====================================================================
-        //  PID algorithm  ( Sub pidloop)
-        //  Note: "/" is floating-point division, so we keep everything double.
+        //  The UI delegates all PI/PID calculations to PID_helper.cs.
         // =====================================================================
         #region [PID algorithm  ( Sub pidloop)]
         private void PidLoop()
         {
-            //  inputd = pv + (inputlast - pv) * (rate / 60)
-            inputd = pv + (inputlast - pv) * (rate / 60);
-            inputlast = pv;
-            //  inputdf = inputdf + (inputd - inputdf) * dfilter / 60
-            inputdf = inputdf + (inputd - inputdf) * dfilter / 60;
-            //  output = (sp - inputdf) * (gain / 100) + feedback
-            output = (sp - inputdf) * (gain / 100) + feedback;
-
-            //  clamp output 0..100
-            if (output > 100) output = 100;
-            if (output < 0) output = 0;
-
-            //  HScroll2.Value = 100 - output  (drives the outlet slider in AUTO)
-            int newVal = (int)Math.Round(100 - output);
-            if (newVal < 0) newVal = 0;
-            if (newVal > 100) newVal = 100;
-            if (newVal < trkOutlet.Minimum) newVal = trkOutlet.Minimum;
-            trkOutlet.Value = newVal;
-            lblOutletVal.Text = trkOutlet.Value.ToString();
-            outvalve = OutletFlow(trkOutlet.Value);
-
-            // feedback = feedback - (feedback - output) * reset / 60
-            feedback = feedback - (feedback - output) * reset / 60;
+            output = _pidController.Update(sp, pv, SimulationSampleSeconds);
         }
 
         /// <summary>
@@ -472,7 +543,7 @@ namespace pid_loop_CSharp
         ///  
         /// rule: outlet stream shows only when outlet valve > 0 AND pv > 0.
         /// </summary>
-        private bool outValveOpen => (trkOutlet.Value > 0) && (pv > 0);
+        private bool outValveOpen => (output > 0) && (pv > 0);
 
         private void PnlTankScene_Paint(object sender, PaintEventArgs e)
         {
@@ -491,12 +562,11 @@ namespace pid_loop_CSharp
             using var brushFlowOut = new SolidBrush(Color.FromArgb(79, 195, 247)); // outlet stream
 
             // ---- scene layout (computed from panel size) ----
-            const int pad = 16;
             // Tank body rectangle: a tall box centered-right.
             int tankLeft = 70;
-            int tankTop = pad + 14;
+            int tankTop = TankTopInset;
             int tankRight = W - 70;
-            int tankBottom = H - pad - 46;
+            int tankBottom = H - TankBottomInset;
             int tankW = tankRight - tankLeft;
             int tankH = tankBottom - tankTop;
             var tankRect = new Rectangle(tankLeft, tankTop, tankW, tankH);
@@ -559,6 +629,14 @@ namespace pid_loop_CSharp
             if (spFrac < 0) spFrac = 0;
             if (spFrac > 1) spFrac = 1;
             int spY = tankBottom - (int)(spFrac * tankH);
+            if (trkSP.IsHandleCreated && pnlTankScene.IsHandleCreated)
+            {
+                GetTrackBarRectangle(trkSP.Handle, TrackBarGetThumbRectangle,
+                    IntPtr.Zero, out TrackBarRectangle thumb);
+                Point center = trkSP.PointToScreen(new Point(0, thumb.CenterY));
+                spY = Math.Clamp(pnlTankScene.PointToClient(center).Y,
+                    tankTop, tankBottom);
+            }
             using var penSP = new Pen(Color.Red, 1.5f) { DashStyle = System.Drawing.Drawing2D.DashStyle.Dash };
             g.DrawLine(penSP, tankLeft, spY, tankRight, spY);
             g.DrawString("SP " + sp.ToString("0"), fontSm, Brushes.Red, tankRight + 4, spY - 8);
@@ -625,8 +703,65 @@ namespace pid_loop_CSharp
 
         private void PnlTankScene_Resize(object sender, EventArgs e)
         {
+            AlignSetpointSlider();
             pnlTankScene.Invalidate();
         }
+
+        private void SetpointGeometryChanged(object? sender, EventArgs e)
+        {
+            AlignSetpointSlider();
+        }
+
+        /// <summary>
+        /// Matches the native thumb travel to the painted tank, including border,
+        /// theme and DPI offsets, without changing its current position or value.
+        /// </summary>
+        private void AlignSetpointSlider()
+        {
+            if (_isAligningSetpointSlider || trkSP == null || pnlTankScene == null ||
+                !trkSP.IsHandleCreated || !pnlTankScene.IsHandleCreated ||
+                trkSP.Parent == null || pnlTankScene.Height <= TankTopInset + TankBottomInset ||
+                System.ComponentModel.LicenseManager.UsageMode ==
+                    System.ComponentModel.LicenseUsageMode.Designtime)
+                return;
+
+            _isAligningSetpointSlider = true;
+            try
+            {
+                GetTrackBarRectangle(trkSP.Handle, TrackBarGetThumbRectangle,
+                    IntPtr.Zero, out TrackBarRectangle thumb);
+                GetTrackBarRectangle(trkSP.Handle, TrackBarGetChannelRectangle,
+                    IntPtr.Zero, out TrackBarRectangle channel);
+                int thumbHeight = thumb.Bottom - thumb.Top;
+                if (thumbHeight <= 0 || channel.Right <= channel.Left)
+                    return;
+                // Native vertical channel rectangles retain horizontal-axis fields.
+                int topOffset = channel.Left + thumbHeight / 2;
+                int bottomOffset = trkSP.Height - channel.Right + (thumbHeight + 1) / 2;
+                Point top = trkSP.Parent.PointToClient(pnlTankScene.PointToScreen(
+                    new Point(0, TankTopInset)));
+                Point bottom = trkSP.Parent.PointToClient(pnlTankScene.PointToScreen(
+                    new Point(0, pnlTankScene.Height - TankBottomInset)));
+                trkSP.SetBounds(trkSP.Left, top.Y - topOffset, trkSP.Width,
+                    bottom.Y - top.Y + topOffset + bottomOffset);
+                pnlTankScene.Invalidate();
+            }
+            finally
+            {
+                _isAligningSetpointSlider = false;
+            }
+        }
+
+        [StructLayout(LayoutKind.Sequential)]
+        private struct TrackBarRectangle
+        {
+            public int Left, Top, Right, Bottom;
+            public int CenterY => (Top + Bottom) / 2;
+        }
+
+        [DllImport("user32.dll", EntryPoint = "SendMessageW", ExactSpelling = true)]
+        private static extern IntPtr GetTrackBarRectangle(IntPtr handle, int message,
+            IntPtr wParam, out TrackBarRectangle rectangle);
 
         private void ConfigurePidBlockSvg()
         {
@@ -704,11 +839,6 @@ namespace pid_loop_CSharp
             int w = picGraphPV.Width;
             int h = picGraphPV.Height;
 
-            // VB: shift the buffer left, newest sample at index 100
-            pvgraph[100] = pv;
-            for (int i = 0; i < 100; i++)
-                pvgraph[i] = pvgraph[i + 1];
-
             // VB plots against ScaleHeight 3105; we scale to the box.
             double scaleY = h / 3105.0;
             using (var pen = new Pen(Color.Cyan, 2))
@@ -736,11 +866,7 @@ namespace pid_loop_CSharp
             int w = picGraphOutput.Width;
             int h = picGraphOutput.Height;
 
-            outgraph[100] = outvalve;
-            for (int i = 0; i < 100; i++)
-                outgraph[i] = outgraph[i + 1];
-
-            // PSet (x, 100 - outgraph(x)*2) against ScaleHeight 105
+            // Trend samples store opening percent, independent of flow units.
             double scaleY = h / 105.0;
             using (var pen = new Pen(Color.Red, 2))
             {
@@ -748,8 +874,8 @@ namespace pid_loop_CSharp
                 {
                     int x1 = i * w / 100;
                     int x2 = (i + 1) * w / 100;
-                    int y1 = ClampY(h - (int)(outgraph[i] * 2 * scaleY), 0, h - 1);
-                    int y2 = ClampY(h - (int)(outgraph[i + 1] * 2 * scaleY), 0, h - 1);
+                    int y1 = ClampY(h - (int)(outgraph[i] * scaleY), 0, h - 1);
+                    int y2 = ClampY(h - (int)(outgraph[i + 1] * scaleY), 0, h - 1);
                     g.DrawLine(pen, x1, y1, x2, y2);
                 }
             }
@@ -829,18 +955,11 @@ namespace pid_loop_CSharp
 
         #region [Helpers]
         /// <summary>
-        /// invalve = (HScroll1.Value * (supply / 100)) / 60
+        /// Converts inlet opening to liters per minute.
         /// </summary>
         /// <param name="valve"></param>
         /// <returns></returns>
-        private double InletFlow(int valve) => (valve * (supply / 100.0)) / 60.0;
-
-        /// <summary>
-        /// outvalve = (HScroll2.Value * 30) / 60
-        /// </summary>
-        /// <param name="valve"></param>
-        /// <returns></returns>
-        private double OutletFlow(int valve) => (valve * 30.0) / 60.0;
+        private double InletFlow(int valve) => valve * supply / 100.0;
 
         private void SetModeLeds(bool manualOn, bool autoOn)
         {
@@ -848,22 +967,23 @@ namespace pid_loop_CSharp
             ledAuto.BackColor = autoOn ? Color.LimeGreen : Color.DimGray;
         }
 
-        private static double ParseParam(TextBox t)
-            => double.TryParse(t.Text, out double v) ? v : 0;
-
         /// <summary>
-        /// Parse, clamp to [lo,hi], write the clamped value back .
+        /// Keeps the last valid finite value while the user edits a parameter.
         /// </summary>
         /// <param name="t"></param>
         /// <param name="lo"></param>
         /// <param name="hi"></param>
         /// <returns></returns>
-        private static double ClampParam(TextBox t, int lo, int hi)
+        private static double ClampParam(TextBox t, int lo, int hi, double previous)
         {
-            if (!double.TryParse(t.Text, out double v)) v = 0;
-            if (v < lo) { v = lo; t.Text = lo.ToString(); }
-            if (v > hi) { v = hi; t.Text = hi.ToString(); }
-            return v;
+            if (!double.TryParse(t.Text, out double value) || !double.IsFinite(value))
+            {
+                if (!t.Focused) t.Text = previous.ToString();
+                return previous;
+            }
+            double clamped = Math.Clamp(value, lo, hi);
+            if (value != clamped && !t.Focused) t.Text = clamped.ToString();
+            return clamped;
         }
 
         private static int ClampY(int v, int lo, int hi)
