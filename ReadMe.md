@@ -167,6 +167,9 @@ actual sampling period, sensors and actuators. You will also need I/O drivers,
 data quality checks, watchdogs, actuator feedback and independent equipment
 protection.
 
+The PID algorithm is encapsulated in a reusable controller; the author accepts
+no liability for any issues arising from its use in engineering projects.
+
 ## Screenshot and historical versions
 
 The image below shows an earlier water-tank interface. The current source

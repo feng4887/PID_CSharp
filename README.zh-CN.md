@@ -103,6 +103,8 @@ dotnet run --project .\tests\PidLoop.RegressionTests\PidLoop.RegressionTests.csp
 
 项目尚未接入真实设备，也未经现场验证。将控制器用于实际设备时，需要根据采样周期、传感器和执行器重新整定，并补齐通信、数据质量检查、看门狗、执行器反馈和独立设备保护。
 
+PID 算法已封装；若用于工程项目，因使用本项目产生的任何问题，作者均不承担责任。
+
 ## 界面与历史版本
 
 下图为早期水箱界面，供参考。当前源码包含三个场景；[`appDownload/`](appDownload/) 中的压缩包为历史版本，当前版本请从源码编译。
