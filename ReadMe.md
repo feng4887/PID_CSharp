@@ -10,6 +10,8 @@ interface is available in English and Chinese.
 The simulator is intended for learning PID control, practicing tuning and
 comparing the responses of different processes.
 
+Everyone is welcome to contribute code.
+
 ## Simulation scenarios
 
 SP is the setpoint, PV is the measured process value, and MV is the controller
