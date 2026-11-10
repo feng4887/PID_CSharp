@@ -1,106 +1,91 @@
-# **C# PID Simulator**
+# C# PID Simulator
 
-## **Development Environment**
+A bilingual .NET 8 WinForms teaching simulator with three complementary control
+scenarios: water-tank level, oven temperature and motor speed. Each scene uses
+its own instance of the shared controller in `pid_loop_CSharp/PID_helper.cs`.
 
-C# PID Water Tank Simulator brings feedback control to life. Watch a 3,100-liter tank fill, see the outlet valve respond, and discover how tuning changes overshoot, oscillation, and settling behavior.
+## Three process scenarios
 
-Built with C# and .NET 8 WinForms, this interactive teaching simulator lets you explore PI/PID control through practical experiments. Change the setpoint, adjust the inlet flow, introduce supply disturbances, or switch to manual control—and watch the response unfold.
-- Visual learning: Animated water flow, adjustable valves, and live liquid-level and valve-position trends.
-- A transparent PI/PID core: Anti-windup, filtered measurement derivative, optional measurement filtering, and bumpless manual/automatic switching.
-- Faster experiments: 10× simulation speed with independently configurable sampling times.
-- Repeatable results: Deterministic disturbances and numerical regression checks.
-- Bilingual interface: English and Chinese support.
-Designed for students, educators, and automation engineers who want to understand control behavior—and developers who want to explore the code behind it.
+| Scene | Setpoint and measurement | Applied output | Experiments |
+| --- | --- | --- | --- |
+| Water tank | Liquid level | Outlet-valve opening, 0–100% | Inlet-flow changes, unstable supply, manual/automatic transfer |
+| Oven | Chamber temperature, °C | Heater power, 0–100% | Thermal lag, overshoot, workpiece loading, door ventilation and heater interlock |
+| Motor | Shaft speed, rpm | Drive command, 0–100% | Acceleration, overshoot, load-torque changes, current limiting and coasting |
 
-![](images/721241288046b1016de9a5e5a07fe13deb39b28565e1c7d2a3a5f6a3f9c3c87f.jpg)
+- Select P, PI or PID and inspect live SP/PV/output trends.
+- Simulation speed: water tank 10×, oven 8×, motor 1×.
+- The oven default setpoint is 180 °C with PID tuning Kp=2.4, Ti=20 s, Td=8 s.
+- The motor default setpoint is 1800 rpm with PI tuning Kp=0.1, Ti=0.3 s.
+- Oven and motor teaching defaults produce visible, convergent overshoot.
+- Opening the oven door interrupts applied heating immediately and increases
+  ventilation loss. The controller tracks the actual zero output during the
+  interlock; the curve and power readout show the applied output.
+- English and Chinese interfaces include a three-tab instructions dialog.
 
-### **Development Platform**
+The scenes are independent Designer-editable UserControls: `usWaterTank`,
+`usOven` and `usMotor`. `frmMain` hosts their tabs and the shared application
+menus. Layout controls are declared in the corresponding `.Designer.cs` files.
 
-- **Framework:** .NET 8 (Windows Desktop)
-- **Programming Language:** C#
-- **IDE:** Microsoft Visual Studio 2022
-- **UI Framework:** Windows Forms (WinForms)
-- **Target Platform:** Windows7 / Windows 10 / Windows 11 (x64)
+## Shared PID controller
 
-### **Code Overview**
+The controller provides timed P/PI/PID calculations, filtered derivative on PV,
+optional PV filtering, independent output/integral limits, manual tracking and
+online retuning. Anti-windup options are conditional integration (default),
+back-calculation and disabled saturation feedback. Advanced options are exposed
+through the helper API; the scene widgets retain their teaching parameter ranges.
 
-The application is written in **C#** using the **.NET 8 Windows Forms** framework. The project adopts an event-driven architecture commonly used in desktop applications.
+The anti-windup strategy concepts reference
+[ROS control_toolbox](https://github.com/ros-controls/control_toolbox). This is an
+independent C# implementation with no ROS dependency. See
+[PID_CONTROL.md](PID_CONTROL.md) for equations, parameter conventions, state
+ownership, simulation assumptions and integration boundaries.
 
-The simulator consists of several functional modules:
+## Build and run
 
-- **Simulation Engine**
-    - Calculates the water tank dynamics.
-    - Simulates inlet flow, outlet flow, and tank level.
-    - Updates the process variable (PV) in real time.
-- **PID Controller**
-    - Implements a standard PID control algorithm.
-    - Supports independent adjustment of:
-        - Proportional Gain (P)
-        - Integral Reset Time (I)
-        - Derivative Rate (D)
-    - Computes the controller output according to the error between SP and PV.
-- **Graphical User Interface**
-    - Built with Windows Forms.
-    - Displays:
-        - Water tank animation
-        - Valve positions
-        - Process Variable (PV)
-        - Setpoint (SP)
-        - Controller Output (CV)
-        - Real-time trend charts
-- **Real-Time Simulation**
-    - Uses a periodic timer to update the simulation.
-    - Refreshes process calculations and graphics continuously to emulate an industrial control loop.
+Use Windows 10/11, the .NET 9.0.315 SDK pinned in `global.json`, and the .NET 8
+Windows Desktop runtime. The application targets `net8.0-windows`; the SDK
+version and target runtime are intentionally separate. Visual Studio 2022 with
+the .NET desktop development workload can open `pid_loop_CSharp.sln`.
 
-### **Purpose**
+From the repository root:
 
-This simulator is designed for:
+```powershell
+dotnet restore .\pid_loop_CSharp.sln
+dotnet build .\pid_loop_CSharp.sln -c Release --no-restore
+dotnet run --project .\pid_loop_CSharp\pid_loop_CSharp.csproj
+```
 
-- Learning PID control fundamentals
-- Understanding process dynamics
-- Practicing PID tuning
-- Demonstrating industrial automation concepts
-- Classroom teaching and laboratory exercises
+The application copies `pid_loop.cfg`, `pid_sampling.cfg` and the PID diagram
+asset to its output directory. Keep these files with the built application.
 
-# **Explanation of Proportional, Integral, Derivative (PID) Control**
+## Regression checks
 
-The objective of this program is to examine a simplified PID control loop used in an industrial setting, in this case, a water tank with level control.
+The regression project is a console runner that links the shared controller and
+process models directly. It covers all three scenes, anti-windup and saturation
+recovery, filtering, tracking, retuning, validation, oven door interlocking and
+visible overshoot with convergence.
 
-Because there are so many variations to PID control loops between manufacturers of controllers, I have chosen a basic algorithm that will allow you to experiment with each of the three PID variables.
+```powershell
+dotnet run --project .\tests\PidLoop.RegressionTests\PidLoop.RegressionTests.csproj -c Release
+```
 
-The water tank is constructed of a tank with a manual input valve that the machine operator can control, a water tank with a level sensor, and an output valve that can either be controlled manually or be controlled by the computer using the PID control algorithm.
+The current suite contains 76 checks. Run it separately from the application
+solution; the test project is not included in the solution file.
 
-When the program starts, the system is already placed into automatic mode with a somewhat stable setting for the PID algorithm. The operator can alter the inlet valve position and see how the computer adjusts the output valve to maintain the level setpoint.
+## Scope
 
-When you make changes to the PID variables, cause an upset by changing the setpoint (SP). This will show you, via the graphs, how well you are "tuning" the control loop.
+The process models and default tunings are educational examples. The oven uses
+a well-mixed effective thermal node and an assumed full-open airflow. The motor
+model includes electrical/mechanical dynamics and a current limit; its drive is
+unipolar and a zero speed command allows coasting.
 
-## **Steps**
+Using the controller with equipment still requires real I/O integration,
+measurement quality checks, timing and watchdog handling, actuator feedback,
+independent equipment protection and field commissioning. The simulator checks
+do not establish hardware suitability or safety certification.
 
-1. Alter the manual input valve and watch the PID loop in action.
-2. With the manual input valve fully opened (100%), click the **Unstable Water Supply** button.
-    - This button causes the main supply water to fluctuate, simulating disturbances found in real industrial processes.
-    - Observe how the PID controller automatically compensates for these fluctuations.
-3. Switch the system to **MANUAL CONTROL**.
-    - You can now operate both the inlet valve and the outlet valve.
-    - Try maintaining the tank level manually while the unstable water supply is enabled.
-4. Change the level **Setpoint (SP)** and observe how the PID controller responds to the new target.
+The image below shows the earlier water-tank interface. Files in `appDownload/`
+are historical packages; build this source tree for the current three-scene
+application.
 
-## **PID Parameters**
-
-### **Proportional (GAIN)**
-
-**Range:** 0–100%
-
-Determines how much the controller output changes according to the error between the **Setpoint (SP)** and the **Process Variable (PV)**.
-
-### **Integral (RESET)**
-
-**Unit:** Seconds
-
-Accumulates the error over time and removes the steady-state offset between the PV and SP.
-
-### **Derivative (RATE)**
-
-**Unit:** Seconds
-
-Predicts future error based on the rate of change, improving response for slow or lagging processes and reducing overshoot.
+![Earlier water-tank interface](images/721241288046b1016de9a5e5a07fe13deb39b28565e1c7d2a3a5f6a3f9c3c87f.jpg)

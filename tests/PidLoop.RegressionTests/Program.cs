@@ -1,5 +1,5 @@
 //=============================================================================
-// Deterministic regression checks for the water-tank teaching simulator.
+// Deterministic regression checks for tank, oven and motor PID teaching models.
 // Author: Jinwang DU / Codex
 // Date: 2026-11-02
 // Version: 1.0
@@ -44,6 +44,23 @@ internal static class Program
             ("PID_UnchangedSettings_DoNotFreezeIntegration", UnchangedSettings),
             ("PID_SaturatedError_DoesNotWindUpIntegral", AntiWindup),
             ("PID_ErrorReversal_LeavesSaturation", SaturationRecovery),
+            ("PID_LargeIntegralStep_ReachesBothOutputLimits", PidIndustrialRegressionChecks.ConditionalBoundary),
+            ("PID_LargeUnwindingStep_StopsAtOppositeLimit", PidIndustrialRegressionChecks.ConditionalUnwinding),
+            ("PID_TinyTi_DoesNotStoreInfiniteIntegral", PidIndustrialRegressionChecks.ExtremeIntegralStep),
+            ("PID_BackCalculation_RecoversFasterThanDisabledAntiWindup", PidIndustrialRegressionChecks.BackCalculationRecovery),
+            ("PID_BackCalculation_LargeDtToTt_RemainsBounded", PidIndustrialRegressionChecks.BackCalculationLargePeriod),
+            ("PID_BackCalculation_AutomaticTrackingTime_UsesTiAndTd", PidIndustrialRegressionChecks.AutomaticTrackingTime),
+            ("PID_OutputAndIntegralLimits_AreIndependent", PidIndustrialRegressionChecks.IndependentLimits),
+            ("PID_IntegralLimits_TakePriorityOverAutomaticTransfer", PidIndustrialRegressionChecks.LimitsOverrideTransfer),
+            ("PID_IntegralDeadband_LeavesProportionalActionActive", PidIndustrialRegressionChecks.IntegralDeadband),
+            ("PID_InvalidAdvancedSettings_PreserveControllerState", PidIndustrialRegressionChecks.InvalidSettingsAreAtomic),
+            ("PID_NumericalFailure_PreservesFiltersAndTransferState", PidIndustrialRegressionChecks.NumericalFailureIsAtomic),
+            ("PID_PurePStatePolicy_IsOwnedByHelper", PidIndustrialRegressionChecks.PurePPolicy),
+            ("Scenes_ModeSwitching_RetainsSharedControllerInstances", PidIndustrialRegressionChecks.ControllerOwnership),
+            ("PID_AllStrategies_RetainTrackingAndNoDerivativeKick", PidIndustrialRegressionChecks.TrackingAcrossStrategies),
+            ("PID_CoreRanges_AreIndependentOfTeachingControls", PidIndustrialRegressionChecks.CoreParameterRanges),
+            ("PID_AdvancedSettings_SurviveSceneRetuning", PidIndustrialRegressionChecks.AdvancedSettingsSurviveRetuning),
+            ("Scenes_BackCalculation_ClosesAllThreeProcessLoops", PidIndustrialRegressionChecks.BackCalculationProcessLoops),
             ("PID_RisingMeasurement_OpensOutletEarlier", DerivativeDirection),
             ("PID_SetpointStep_DoesNotKickDerivative", NoDerivativeKick),
             ("PID_DerivativeFilter_AttenuatesAlternatingNoise", DerivativeFilter),
@@ -60,7 +77,31 @@ internal static class Program
             ("RealIO_Integral_UsesActualElapsedSeconds", RealIoIntegralTime),
             ("RealIO_Derivative_UsesActualElapsedSeconds", RealIoDerivativeTime),
             ("RealIO_InvalidElapsed_DoesNotChangeState", InvalidRealIoElapsed),
-            ("RealIO_ManualTracking_RemainsBumpless", RealIoManualTracking)
+            ("RealIO_ManualTracking_RemainsBumpless", RealIoManualTracking),
+            ("Oven_SharedPID_UsesHeatingActionAndEngineeringUnits", OvenRegressionChecks.HeatingActionAndMapping),
+            ("Oven_P_PI_PID_ShowTheirExpectedSteadyStates", OvenRegressionChecks.SteadyStateModes),
+            ("Oven_OpenDoor_DropsTemperatureAndRecovers", OvenRegressionChecks.DoorDisturbance),
+            ("Oven_ColdWorkpiece_DrawsHeatAndRecovers", OvenRegressionChecks.ColdWorkpieceDisturbance),
+            ("Oven_Reset_RetainsTuningAndRestoresInitialLoad", OvenRegressionChecks.ResetAndCapacity),
+            ("Oven_ModeSwitching_DoesNotLeaveHiddenIntegralInP", OvenRegressionChecks.ModeSwitchingAndOnlineTuning),
+            ("Oven_DoorInterlock_RecoversWithoutWindup", OvenRegressionChecks.InterlockRecovery),
+            ("Oven_PlantInterlock_BlocksDirectHeatingRequests", OvenRegressionChecks.PlantInterlock),
+            ("Oven_VentilationLoss_AccountsForAirExchangeAndInertia", OvenRegressionChecks.VentilationAndInertia),
+            ("Oven_RetuningWhileOpen_ReportsAppliedZeroPower", OvenRegressionChecks.RetuningWhileInterlocked),
+            ("Oven_DoorCycle_RemainsConsistentAcrossStepIntervals", OvenRegressionChecks.DoorCycleSampleIntervals),
+            ("Oven_ThermalEnergy_IsConserved", OvenRegressionChecks.EnergyBalance),
+            ("Oven_InvalidInput_DoesNotChangeState", OvenRegressionChecks.InvalidInputIsAtomic),
+            ("Oven_RepeatedInputsAndSampleIntervals_AreConsistent", OvenRegressionChecks.RepeatabilityAndSampleIntervals),
+            ("Motor_SharedPID_UsesSpeedActionAndEngineeringUnits", MotorRegressionChecks.DirectionAndEngineeringUnits),
+            ("Motor_OpenLoop_FollowsSteadyStatePhysicsAndCurrentLimit", MotorRegressionChecks.OpenLoopSteadyStateAndLimits),
+            ("Motor_P_PI_PID_ShowExpectedSteadyStates", MotorRegressionChecks.SteadyStateModes),
+            ("Motor_LoadAndUnload_RecoverTargetSpeed", MotorRegressionChecks.LoadAndUnloadRecovery),
+            ("Motor_UnreachableTarget_RecoversWithoutWindup", MotorRegressionChecks.SaturationRecovery),
+            ("Motor_ModeSwitching_PHasNoHiddenIntegral", MotorRegressionChecks.PurePAndBumplessTransfer),
+            ("Motor_Reset_RetainsTuningAndRestoresRest", MotorRegressionChecks.ResetRetainsTuning),
+            ("Motor_InnerClocks_AreIndependentOfUiBatching", MotorRegressionChecks.IndependentInnerClocks),
+            ("Motor_ZeroTarget_CoastsWithoutReverseCurrent", MotorRegressionChecks.CoastingWithoutReverseBraking),
+            ("Motor_InvalidInput_DoesNotChangeState", MotorRegressionChecks.InvalidInputIsAtomic)
         };
 
         int failed = 0;

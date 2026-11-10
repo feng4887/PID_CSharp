@@ -1,0 +1,202 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <!--
+    Microsoft ResX Schema
+
+    Version 2.0
+
+    The primary goals of this format is to allow a simple XML format
+    that is mostly human readable. The generation and parsing of the
+    various data types are done through the TypeConverter classes
+    associated with the data types.
+
+    Example:
+
+    ... ado.net/XML headers & schema ...
+    <resheader name="resmimetype">text/microsoft-resx</resheader>
+    <resheader name="version">2.0</resheader>
+    <resheader name="reader">System.Resources.ResXResourceReader, System.Windows.Forms, ...</resheader>
+    <resheader name="writer">System.Resources.ResXResourceWriter, System.Windows.Forms, ...</resheader>
+    <data name="Name1"><value>this is my long string</value><comment>this is a comment</comment></data>
+    <data name="Color1" type="System.Drawing.Color, System.Drawing">Blue</data>
+    <data name="Bitmap1" mimetype="application/x-microsoft.net.object.binary.base64">
+        <value>[base64 mime encoded serialized .NET Framework object]</value>
+    </data>
+    <data name="Icon1" type="System.Drawing.Icon, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">
+        <value>[base64 mime encoded string representing a byte array form of the .NET Framework object]</value>
+        <comment>This is a comment</comment>
+    </data>
+
+    There are any number of "resheader" rows that contain simple
+    name/value pairs.
+
+    Each data row contains a name, and value. The row also contains a
+    type or mimetype. Type corresponds to a .NET class that support
+    text/value conversion through the TypeConverter architecture.
+    Classes that don't support this are serialized and stored with the
+    mimetype set.
+
+    The mimetype is used for serialized objects, and tells the
+    ResXResourceReader how to depersist the object. This is currently not
+    extensible. For a given mimetype the value must be set accordingly:
+
+    Note - application/x-microsoft.net.object.binary.base64 is the format
+    that the ResXResourceWriter will generate, however the reader can
+    read any of the formats listed below.
+
+    mimetype: application/x-microsoft.net.object.binary.base64
+    value   : The object must be serialized with
+            : System.Runtime.Serialization.Formatters.Binary.BinaryFormatter
+            : and then encoded with base64 encoding.
+
+    mimetype: application/x-microsoft.net.object.soap.base64
+    value   : The object must be serialized with
+            : System.Runtime.Serialization.Formatters.Soap.SoapFormatter
+            : and then encoded with base64 encoding.
+
+    mimetype: application/x-microsoft.net.object.bytearray.base64
+    value   : The object must be serialized into a byte array
+            : using a System.ComponentModel.TypeConverter
+            : and then encoded with base64 encoding.
+    -->
+  <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+    <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
+    <xsd:element name="root" msdata:IsDataSet="true">
+      <xsd:complexType>
+        <xsd:choice maxOccurs="unbounded">
+          <xsd:element name="metadata">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" />
+              </xsd:sequence>
+              <xsd:attribute name="name" use="required" type="xsd:string" />
+              <xsd:attribute name="type" type="xsd:string" />
+              <xsd:attribute name="mimetype" type="xsd:string" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="assembly">
+            <xsd:complexType>
+              <xsd:attribute name="alias" type="xsd:string" />
+              <xsd:attribute name="name" type="xsd:string" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="data">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+                <xsd:element name="comment" type="xsd:string" minOccurs="0" msdata:Ordinal="2" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" msdata:Ordinal="1" />
+              <xsd:attribute name="type" type="xsd:string" msdata:Ordinal="3" />
+              <xsd:attribute name="mimetype" type="xsd:string" msdata:Ordinal="4" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="resheader">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" />
+            </xsd:complexType>
+          </xsd:element>
+        </xsd:choice>
+      </xsd:complexType>
+    </xsd:element>
+  </xsd:schema>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="rtbWaterInstructions.Text" xml:space="preserve">
+    <value>Water tank: control the outlet valve to follow a volume target
+
+1. SP, PV and MV
+SP is the target volume and PV is the measured volume, both in liters (L). MV is the outlet valve opening, from 0 to 100%. You adjust the inlet manually; the PID controls the outlet. A PV above SP requires more discharge, while a PV below SP requires less.
+The tank holds 3100 L. Maximum inlet flow is 2000 L/min and maximum outlet flow is 3000 L/min. Overflow or an empty tank can occur if the flows exceed the available capacity.
+
+2. Parameters and default tuning
+Default PI tuning: GAIN=12, RESET=6 s, RATE=0 s.
+GAIN/100 is outlet percentage points per liter of error. RESET is integral time Ti: smaller means stronger integration. RATE is derivative time Td. Entering zero disables the corresponding I or D term; disabling I retains the operating bias.
+Compare with smoother PI tuning GAIN=30, RESET=80 s, RATE=0 s. Parameter conventions differ between controller manufacturers; numeric values are not directly interchangeable.
+
+3. Experiments
+1) In automatic mode, change SP and observe tracking, overshoot and decaying oscillation.
+2) Change the manual inlet valve and watch the outlet compensate for the supply change.
+3) Set the inlet to 100%, then enable unstable supply to observe correction under repeatable disturbances.
+4) Select manual control and move the outlet valve yourself. Try to hold the volume, then return to automatic and observe output tracking and subsequent regulation.
+5) Compare P, PI and PID, noting which tuning inputs are active.
+
+4. Reading the response
+Oscillation that gradually shrinks around SP is a damped response. If PV remains far from SP or the valve stays at 0% or 100%, check flow capacity and tuning before diagnosing the algorithm.
+Small overshoot may be hard to see on a full-range plot; also compare the PV, SP and valve readouts.
+
+5. Simulation time
+The tank runs at 10x speed. Ti/Td use simulation seconds. Real equipment must use actual acquisition intervals without simulation acceleration.</value>
+  </data>
+  <data name="rtbOvenInstructions.Text" xml:space="preserve">
+    <value>Oven temperature: control heating power and observe thermal inertia
+
+1. SP, PV and MV
+SP is target temperature and PV is sensor temperature, in degrees Celsius. MV is applied heater output: 0-100% maps to 0-18 kW.
+The heater, chamber and parts store heat. Temperature can keep changing after output is reduced or interrupted; zero electrical power does not mean the heater is already cold.
+
+2. Current defaults and parameters
+Default PID: SP=180 C, Kp=2.4 %/C, Ti=20 s, Td=8 s.
+Kp sets the power correction per degree of error. Smaller Ti strengthens integration. Td uses the filtered rate of measured temperature change.
+P disables I and D and normally leaves a heat-loss offset. PI can remove steady error within heater capacity. PID also uses derivative action, but needs suitable tuning; adding D does not guarantee less overshoot.
+The defaults intentionally demonstrate visible but convergent startup overshoot.
+
+3. Basic experiments
+1) Keep default PID and select Reset. Observe heating from 25 C, crossing SP, falling back and settling.
+2) Select P, PI or PID, then Reset each time to compare from the same initial temperature.
+3) Change target or tuning and compare speed, overshoot and settling time. Switching mode may change output.
+4) Once stable, add a 25 C cold part. Observe the temperature dip and extra heating demand. Up to three parts fit in the model.
+
+4. Door ventilation and heater interlock
+Opening the door increases air exchange and immediately blocks heating. Applied MV and its power trend must show zero, while temperature falls continuously. The hot heater can still release stored heat.
+Once near 180 C, open the door for about 30 simulation seconds, then close it. After closing, heating resumes; PV may fall a little further before rising, and recovery overshoot can follow.
+The controller tracks actual zero output while interlocked. Changing tuning with the door open cannot bypass the heater interlock.
+
+5. Time and trends
+The oven runs at 8x speed: 30 simulation seconds take about 3.75 seconds on screen. The upper plot uses blue for SP and orange for PV; the lower plot shows applied output in green.
+Door airflow is a teaching assumption, not a calibrated rating for a specific oven. Air and wall temperatures are not displayed as separate states.</value>
+  </data>
+  <data name="rtbMotorInstructions.Text" xml:space="preserve">
+    <value>Motor speed: control drive voltage and observe inertia and load
+
+1. SP, PV and MV
+SP is target speed and PV is actual speed, in rpm. MV is drive output: 0-100% maps to 0-48 V armature voltage. It does not directly impose a shaft speed.
+Current produces torque; load and friction consume torque. The model limits current to 20 A, so increased output still requires time to accelerate the shaft.
+
+2. Current defaults and parameters
+Default PI: SP=1800 rpm, Kp=0.1 %/rpm, Ti=0.3 s.
+The UI retains Td=0.03 s, but PI does not use it. Select PID to enable D.
+Kp is output percentage points per rpm of error. Smaller Ti strengthens integration and may increase overshoot. Td uses a filtered speed derivative and must be tuned with Kp and Ti.
+P disables I and D and normally leaves a speed offset. PI/PID can remove steady error within drive capability. Adding D does not guarantee a better response with unchanged tuning.
+
+3. Startup and mode comparison
+1) Keep default PI and select Reset. Observe starting current, acceleration, overshoot and settling.
+2) After selecting P, PI or PID, Reset to compare from rest. Different initial states can make a comparison misleading.
+3) Keep Kp=0.1 and change Ti from 0.3 s to 0.65 s, then Reset, to compare a milder startup response.
+4) Change SP to observe acceleration or deceleration. Reset retains target and tuning while clearing load and motion state.
+
+4. Loading and unloading
+At steady speed, apply the 1.20 N.m load. Speed first falls; current and drive output rise, and PI restores speed toward target.
+Remove the load: speed first rises, then lower output brings it back. Compare the speed dip, unloading overshoot and recovery time.
+An excessive target or load may be unreachable even at MV=100%. Check voltage, current and torque limits before treating this as a PID fault.
+
+5. Time and readouts
+The motor runs at 1x speed. The upper plot uses blue for SP and orange for PV; the lower plot shows drive output in green. Also watch current and load.
+At a zero-speed target, this unipolar model coasts down through friction without reverse braking current. Slow stopping alone does not indicate a PID failure.</value>
+  </data>
+</root>

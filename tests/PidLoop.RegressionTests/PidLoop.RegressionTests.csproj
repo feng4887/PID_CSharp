@@ -9,5 +9,9 @@
     <Compile Include="..\..\pid_loop_CSharp\PID_helper.cs" Link="PID_helper.cs" />
     <Compile Include="..\..\pid_loop_CSharp\TankModel.cs" Link="TankModel.cs" />
     <Compile Include="..\..\pid_loop_CSharp\PidSamplingSettings.cs" Link="PidSamplingSettings.cs" />
+    <Compile Include="..\..\pid_loop_CSharp\OvenModel.cs" Link="OvenModel.cs" />
+    <Compile Include="..\..\pid_loop_CSharp\OvenSimulation.cs" Link="OvenSimulation.cs" />
+    <Compile Include="..\..\pid_loop_CSharp\MotorModel.cs" Link="MotorModel.cs" />
+    <Compile Include="..\..\pid_loop_CSharp\MotorSimulation.cs" Link="MotorSimulation.cs" />
   </ItemGroup>
 </Project>

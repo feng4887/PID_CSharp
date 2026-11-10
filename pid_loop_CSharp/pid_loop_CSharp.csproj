@@ -11,6 +11,36 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Update="usWaterTank.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Update="usWaterTank.Designer.cs">
+      <DependentUpon>usWaterTank.cs</DependentUpon>
+    </Compile>
+    <EmbeddedResource Update="usWaterTank.resx">
+      <DependentUpon>usWaterTank.cs</DependentUpon>
+    </EmbeddedResource>
+    <Compile Update="usOven.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Update="usOven.Designer.cs">
+      <DependentUpon>usOven.cs</DependentUpon>
+    </Compile>
+    <EmbeddedResource Update="usOven.resx">
+      <DependentUpon>usOven.cs</DependentUpon>
+    </EmbeddedResource>
+    <Compile Update="usMotor.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Update="usMotor.Designer.cs">
+      <DependentUpon>usMotor.cs</DependentUpon>
+    </Compile>
+    <EmbeddedResource Update="usMotor.resx">
+      <DependentUpon>usMotor.cs</DependentUpon>
+    </EmbeddedResource>
+  </ItemGroup>
+
+  <ItemGroup>
     <Content Include="Assets\PID.ico" />
     <None Include="Assets\pid_control_icon.svg" />
     <None Update="pid_loop.cfg">

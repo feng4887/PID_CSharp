@@ -1,0 +1,21 @@
+# Build output
+**/bin/
+**/obj/
+artifacts/
+output/
+
+# IDE and local user state
+.vs/
+.idea/
+.cr/
+.mimosa/
+*.user
+*.suo
+*.userosscache
+*.sln.docstates
+
+# Local tooling and verification files
+work/
+.agents/
+.codex/
+.codegraph/
