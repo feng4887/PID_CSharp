@@ -1,75 +1,126 @@
 # PID_CSharp
 
-用 C# 和 WinForms 编写的 PID 仿真程序，包含水箱液位、烤箱温度和电机转速三个场景。运行时可以修改设定值、调整 PID 参数、施加扰动，并查看反馈值和控制输出的变化。界面支持中文和英文。
+**English** | [简体中文](README.zh-CN.md)
 
-项目用于学习 PID、练习参数整定，也适合在教学中比较不同控制对象的响应。
+PID_CSharp is a C# WinForms simulator for water-tank level, oven temperature
+and DC motor speed control. Change the setpoint and PID tuning, apply
+disturbances, and watch the process and controller output respond. The
+interface is available in English and Chinese.
 
-## 仿真场景
+The simulator is intended for learning PID control, practicing tuning and
+comparing the responses of different processes.
 
-界面中的 SP 表示设定值，PV 表示反馈值，MV 表示控制输出。PID 根据 SP 与 PV 的偏差调节输出，三个场景对应的量如下：
+## Simulation scenarios
 
-| 场景 | 设定值与反馈值 | 控制输出 | 可施加的扰动 |
+SP is the setpoint, PV is the measured process value, and MV is the controller
+output. The controller adjusts MV based on the difference between SP and PV.
+
+| Scenario | Setpoint and feedback | Controller output | Disturbances |
 | --- | --- | --- | --- |
-| 水箱液位 | 目标水量、当前水量，单位 L | 出水阀开度，0～100% | 调整进水阀、启用不稳定供水 |
-| 烤箱温度 | 目标温度、测量温度，单位 °C | 实际加热功率百分比，0～100% | 开关炉门、放入冷工件 |
-| 电机转速 | 目标转速、实际转速，单位 rpm | 驱动输出，0～100% | 加载或卸载 1.20 N·m 的负载 |
+| Water tank | Target and actual water volume, L | Outlet-valve opening, 0–100% | Inlet-valve changes, unstable water supply |
+| Oven | Target and measured temperature, °C | Applied heater output, 0–100% | Opening or closing the door, adding a cold workpiece |
+| Motor | Target and actual shaft speed, rpm | Drive command, 0–100% | Applying or removing a 1.20 N·m load |
 
-水箱通过调节出水量控制液位，水位偏高时应增大出水阀开度。烤箱和电机则通过增加输出来升温或提速。
+The tank controls its level by adjusting discharge: a high level calls for
+more outlet-valve opening. In the oven and motor scenes, increasing the output
+raises temperature or speed.
 
-### 水箱液位
+### Water-tank level
 
-水箱容量为 3100 L，液位以存水量表示。进水阀由用户手动调节，自动模式下由 PID 控制出水阀。改变进水量后，可以观察出水阀的动作和水量的恢复过程；切到手动模式后，也可以自己调节出水阀，比较两种操作方式。
+The tank has a capacity of 3,100 L. Its level display uses water volume in
+liters. The inlet valve is adjusted manually; in automatic mode, the PID
+controller adjusts the outlet valve. Change the inlet flow to observe the
+valve response and the return toward the setpoint. Switch to manual mode to
+adjust the outlet valve yourself and compare the two approaches.
 
-### 烤箱温度
+### Oven temperature
 
-烤箱模型考虑了加热器、炉腔和工件的热惯性。温度稳定后放入冷工件，或开门一段时间再关门，可以观察温降、功率变化和恢复过程。
+The oven model includes the thermal inertia of the heater, chamber and
+workpieces. Once the temperature has settled, add a cold workpiece or leave
+the door open briefly before closing it. Watch how the heater output changes
+as the temperature falls and recovers.
 
-开门时，加热联锁立即切断功率，同时按空气交换计算散热。联锁期间，PID 跟踪实际的零输出；关门后恢复自动调节。界面上的功率读数和输出曲线显示实际施加的功率。
+Opening the door cuts heater power immediately and increases heat loss
+through air exchange. While the heater interlock is active, the controller
+tracks the actual zero output. Closing the door releases the interlock and
+resumes automatic control. The power readout and output trend show the applied
+heater output.
 
-### 电机转速
+### Motor speed
 
-电机采用 48 V 直流电机模型，模拟电枢电流和电磁转矩，并考虑转动惯量与电流限制。加载后，转速通常先下降，随后驱动输出和电流增加；卸载时，转速会先升高，再由控制器逐步调回目标附近。
+The 48 V DC motor model simulates armature current and electromagnetic torque,
+with rotor inertia and a current limit. Applying load initially reduces the
+speed, followed by an increase in drive output and current. Removing the load
+initially raises the speed; the controller then brings it back toward the
+setpoint.
 
-模型采用单向驱动。将目标转速设为 0 时，电机依靠摩擦滑行减速，没有反向制动电流。
+The drive is unipolar. With a target of 0 rpm, the motor coasts down under
+friction, without reverse braking current.
 
-## 参数与曲线
+## Tuning and response curves
 
-首次运行可先保留默认参数：
+Start with the default settings:
 
-| 场景 | 控制方式 | 设定值 | 整定参数 |
+| Scenario | Mode | Setpoint | Tuning |
 | --- | --- | --- | --- |
-| 水箱 | PI | 1500 L | GAIN=12，RESET=6 s，RATE=0 s |
-| 烤箱 | PID | 180 °C | Kp=2.4 %/°C，Ti=20 s，Td=8 s |
-| 电机 | PI | 1800 rpm | Kp=0.1 %/rpm，Ti=0.3 s |
+| Water tank | PI | 1500 L | GAIN=12, RESET=6 s, RATE=0 s |
+| Oven | PID | 180 °C | Kp=2.4 %/°C, Ti=20 s, Td=8 s |
+| Motor | PI | 1800 rpm | Kp=0.1 %/rpm, Ti=0.3 s |
 
-水箱沿用 GAIN、RESET、RATE 的参数名称：GAIN/100 表示每升误差对应的阀位百分点，RESET 和 RATE 分别为积分时间 Ti、微分时间 Td。
+The tank uses GAIN, RESET and RATE for its tuning parameters. GAIN/100 is the
+proportional gain in percentage points of valve opening per liter of error.
+RESET is the integral time Ti, and RATE is the derivative time Td.
 
-电机界面保留 Td=0.03 s，在 PI 模式下不参与运算，切换到 PID 后才启用。
+The motor interface retains Td=0.03 s. It is inactive in PI mode and becomes
+active when PID mode is selected.
 
-烤箱和电机的默认整定会产生一定超调，便于观察启动时超过设定值、回落并逐渐稳定的过程。在这两个场景中比较 P、PI、PID 时，建议每次切换后点击“重来”，从相同初始状态观察。等系统稳定后，再改变设定值或施加扰动。加入微分并不保证原有参数下的效果更好，仍需要重新整定。
+The oven and motor defaults produce some overshoot, so you can observe the
+initial rise, the peak and the return to the setpoint. When comparing P, PI
+and PID in these two scenes, click **Reset** after changing the mode to start
+from the same initial conditions. Once the process settles, change the
+setpoint or apply a disturbance. Adding derivative action does not guarantee
+a better response with the existing tuning; retune and compare.
 
-水箱按 10 倍速仿真，烤箱为 8 倍速，电机为 1 倍速。Ti、Td 和曲线时间均按仿真秒计算。菜单中的“说明”对话框分别介绍了三个场景的操作和实验方法。
+The tank runs at 10× simulation speed, the oven at 8× and the motor at 1×.
+Ti, Td and trend times use simulated seconds. The **Instructions** dialog
+provides operating steps and suggested experiments for all three scenes.
 
-## PID 算法与代码结构
+## PID controller and code structure
 
-三个场景共用 [`PID_helper.cs`](pid_loop_CSharp/PID_helper.cs) 中的算法，各自持有独立的控制器实例和仿真状态。场景代码负责单位换算、控制方向和过程模型。
+All three scenes use the algorithm in
+[`PID_helper.cs`](pid_loop_CSharp/PID_helper.cs). Each has its own controller
+instance and simulation state. Scene code handles units, control direction
+and process models.
 
-控制器支持 P、PI、PID，包含输出限幅、独立积分限幅、测量值滤波、带滤波的测量值微分、手动输出跟踪和在线调参。抗积分饱和可选择条件积分、反算，或关闭输出饱和反馈；默认使用条件积分。抗饱和策略等高级选项通过 helper API 配置，界面中没有对应的策略选择控件。
+The controller supports P, PI and PID, with output limits, independent
+integral limits, optional measurement filtering, filtered derivative on the
+measurement, manual output tracking and online retuning. Anti-windup options
+are conditional integration (the default), back-calculation and disabled
+output-saturation feedback. Advanced options are configured through the
+helper API; the interface has no anti-windup strategy selector.
 
-抗饱和策略参考了 [ROS control_toolbox](https://github.com/ros-controls/control_toolbox)，使用 C# 独立实现，不依赖 ROS。算法公式、参数约定和限制见 [`PID_CONTROL.md`](PID_CONTROL.md)。
+The anti-windup design follows concepts from
+[ROS control_toolbox](https://github.com/ros-controls/control_toolbox).
+This is an independent C# implementation with no ROS dependency. See
+[`PID_CONTROL.md`](PID_CONTROL.md) for equations, parameter conventions
+and limitations.
 
-主窗体 `frmMain` 承载三个标签页，场景分别封装在 `usWaterTank`、`usOven` 和 `usMotor` 中。页面控件保存在各自的 `.Designer.cs` 文件中，可以用 Visual Studio 设计器调整布局。
+The main form, `frmMain`, hosts three tabs. Each scene is a separate
+UserControl: `usWaterTank`, `usOven` and `usMotor`. Page controls are declared
+in their `.Designer.cs` files, so layouts can be edited in the Visual Studio
+Designer.
 
-## 编译与运行
+## Build and run
 
-开发环境：
+Development requirements:
 
-- Windows 10 或 Windows 11。
-- .NET SDK 9.0.315，版本由 `global.json` 固定。
-- .NET 8 Windows Desktop Runtime，供程序运行使用。
-- 使用 Visual Studio 时，安装“.NET 桌面开发”工作负载，建议使用 Visual Studio 2022 17.14 或更高版本。
+- Windows 10 or Windows 11.
+- .NET SDK 9.0.315, pinned in `global.json`.
+- .NET 8 Windows Desktop Runtime to run the application.
+- Optional: Visual Studio 2022 17.14 or later with the
+  **.NET desktop development** workload installed.
 
-项目的目标框架为 `net8.0-windows`。在仓库根目录执行：
+The application targets `net8.0-windows`. From the repository root, run:
 
 ```powershell
 dotnet restore .\pid_loop_CSharp.sln
@@ -77,30 +128,47 @@ dotnet build .\pid_loop_CSharp.sln -c Release --no-restore
 dotnet run --project .\pid_loop_CSharp\pid_loop_CSharp.csproj -c Release --no-build
 ```
 
-也可以用 Visual Studio 打开 `pid_loop_CSharp.sln`，将主项目设为启动项目后运行。
+You can also open `pid_loop_CSharp.sln` in Visual Studio, set the main project
+as the startup project and run it.
 
-编译时会将 `pid_loop.cfg`、`pid_sampling.cfg` 和 PID 示意图复制到输出目录。复制程序到其他位置时，请一并保留这些文件。`pid_sampling.cfg` 中的采样设置用于水箱场景；其中的真实 I/O 周期是预留参数，不会启用硬件通信。
+The build copies `pid_loop.cfg`, `pid_sampling.cfg` and the PID diagram to
+the output directory. Keep these files with the application when copying it
+to another location. The sampling settings in `pid_sampling.cfg` apply to
+the tank scene. The real I/O period setting is reserved for future integration
+and does not enable hardware communication.
 
-## 回归检查
+## Regression checks
 
-回归项目是独立的控制台程序，直接使用共享 PID 和过程模型代码。目前包含 76 项检查，覆盖三个场景的响应、饱和恢复、滤波、输出跟踪、参数校验及开门联锁等行为。
+The regression project is a standalone console runner that uses the shared
+PID and process-model source files directly. It currently contains 76 checks
+covering all three scenes, saturation recovery, filtering, output tracking,
+parameter validation and the oven door interlock.
 
-在仓库根目录运行：
+Run it from the repository root:
 
 ```powershell
 dotnet run --project .\tests\PidLoop.RegressionTests\PidLoop.RegressionTests.csproj -c Release
 ```
 
-该项目未加入主解决方案，需要单独运行。
+This project is not included in the main solution and must be run separately.
 
-## 使用范围
+## Scope
 
-过程模型和默认参数用于教学与仿真实验。烤箱采用等效热容和固定开门风量，电机模型也做了简化，曲线不能直接代表某台现场设备。
+The process models and default settings are intended for teaching and
+simulation experiments. The oven uses effective heat capacities and a fixed
+airflow when the door is open. The motor model is also simplified. The curves
+should not be treated as predictions for a particular machine.
 
-项目尚未接入真实设备，也未经现场验证。将控制器用于实际设备时，需要根据采样周期、传感器和执行器重新整定，并补齐通信、数据质量检查、看门狗、执行器反馈和独立设备保护。
+The project has no hardware I/O integration and has not been validated on real
+equipment. Using the controller with real equipment requires tuning for the
+actual sampling period, sensors and actuators. You will also need I/O drivers,
+data quality checks, watchdogs, actuator feedback and independent equipment
+protection.
 
-## 界面与历史版本
+## Screenshot and historical versions
 
-下图为早期水箱界面，供参考。当前源码包含三个场景；[`appDownload/`](appDownload/) 中的压缩包为历史版本，当前版本请从源码编译。
+The image below shows an earlier water-tank interface. The current source
+contains all three scenes. Archives in [`appDownload/`](appDownload/) are
+historical versions; build from source for the current application.
 
-![早期水箱界面](images/721241288046b1016de9a5e5a07fe13deb39b28565e1c7d2a3a5f6a3f9c3c87f.jpg)
+![Earlier water-tank interface](images/721241288046b1016de9a5e5a07fe13deb39b28565e1c7d2a3a5f6a3f9c3c87f.jpg)
