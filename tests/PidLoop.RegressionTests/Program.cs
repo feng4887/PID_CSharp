@@ -173,11 +173,11 @@ internal static class Program
             double opening = pid.Update(1500, tank.VolumeLiters, DefaultDt);
             tank.Step(2000, opening, DefaultDt);
             levels[i] = tank.VolumeLiters;
-            Require(double.IsFinite(opening) && opening is >= 0 and <= 100,
+            Require(FrameworkCompatibility.IsFinite(opening) && opening is >= 0 and <= 100,
                 "Cold-start output must stay finite and bounded");
         }
         Near(tank.OverflowLiters, 0, 0, "Cold start must not overflow");
-        Near(levels[^1], 1500, 5, "Cold-start final level");
+        Near(levels[levels.Length - 1], 1500, 5, "Cold-start final level");
         Require(levels.Max() - 1500 <= 30, "Cold-start overshoot exceeds 30 L");
         Console.WriteLine($"  cold-start peak={levels.Max():F3} L, " +
             $"settling={SettlingTime(levels, 1500, DefaultDt):F1} s");
@@ -189,7 +189,7 @@ internal static class Program
         double overshoot = trace.Levels.Max() - 1800;
         double settling = SettlingTime(trace.Levels, 1800, trace.Dt);
         Console.WriteLine($"  SP +300 L: overshoot={overshoot:F3} L, " +
-            $"settling={settling:F1} s, final={trace.Levels[^1]:F3} L");
+            $"settling={settling:F1} s, final={trace.Levels[trace.Levels.Length - 1]:F3} L");
         Require(overshoot <= 30, "Step overshoot exceeds 10% of the 300 L step");
         Require(settling <= 180, "Step does not settle within 180 s");
     }
@@ -200,7 +200,7 @@ internal static class Program
         double deviation = trace.Levels.Max(value => Math.Abs(value - 1500));
         double settling = SettlingTime(trace.Levels, 1500, trace.Dt);
         Console.WriteLine($"  inlet +400 L/min: deviation={deviation:F3} L, " +
-            $"settling={settling:F1} s, final={trace.Levels[^1]:F3} L");
+            $"settling={settling:F1} s, final={trace.Levels[trace.Levels.Length - 1]:F3} L");
         Require(deviation <= 100, "Disturbance deviation exceeds 100 L");
         Require(settling <= 180, "Disturbance does not settle within 180 s");
     }
@@ -252,13 +252,13 @@ internal static class Program
             "Teaching outlet must show a visible opening peak");
         Require(outputs[outputValley] is > 45 and < 62,
             "Teaching outlet must return through a bounded opening valley");
-        Require(outputs.All(opening => double.IsFinite(opening) &&
+        Require(outputs.All(opening => FrameworkCompatibility.IsFinite(opening) &&
             opening is >= 0 and <= 100), "Teaching outputs must stay finite and bounded");
         Near(tank.OverflowLiters, 0, 0, "Teaching startup must not overflow");
         Require(SettlingTime(levels, 1500, DefaultDt) <= 200,
             "Teaching startup must settle within 200 simulated seconds");
-        Near(levels[^1], 1500, 1, "Teaching startup final level");
-        Near(outputs[^1], BalancedOutput, 0.2, "Teaching startup final outlet opening");
+        Near(levels[levels.Length - 1], 1500, 1, "Teaching startup final level");
+        Near(outputs[outputs.Length - 1], BalancedOutput, 0.2, "Teaching startup final outlet opening");
         Console.WriteLine($"  teaching startup peak={levels[peak]:F3} L, " +
             $"valley={levels[valley]:F3} L, next peak={levels[nextPeak]:F3} L, " +
             $"outlet={outputs[outputPeak]:F3}/{outputs[outputValley]:F3}%, " +
@@ -280,7 +280,7 @@ internal static class Program
             "Teaching SP step peaks must decay");
         Require(SettlingTime(trace.Levels, 1800, trace.Dt) <= 160,
             "Teaching SP step must settle within 160 simulated seconds");
-        Near(trace.Levels[^1], 1800, 1, "Teaching SP step final level");
+        Near(trace.Levels[trace.Levels.Length - 1], 1800, 1, "Teaching SP step final level");
         Console.WriteLine($"  teaching SP step peak={trace.Levels[peak]:F3} L, " +
             $"valley={trace.Levels[valley]:F3} L, " +
             $"settling={SettlingTime(trace.Levels, 1800, trace.Dt):F1} s");
@@ -295,7 +295,7 @@ internal static class Program
             "Teaching supply response must show correction on both sides of SP");
         Require(SettlingTime(trace.Levels, 1500, trace.Dt) <= 110,
             "Teaching supply response must settle within 110 simulated seconds");
-        Near(trace.Levels[^1], 1500, 1, "Teaching supply step final level");
+        Near(trace.Levels[trace.Levels.Length - 1], 1500, 1, "Teaching supply step final level");
         Console.WriteLine($"  teaching supply step peak={trace.Levels.Max():F3} L, " +
             $"valley={trace.Levels.Min():F3} L, " +
             $"settling={SettlingTime(trace.Levels, 1500, trace.Dt):F1} s");
@@ -669,7 +669,7 @@ internal static class Program
 
     private static void Near(double actual, double expected, double tolerance, string name)
     {
-        Require(double.IsFinite(actual) && Math.Abs(actual - expected) <= tolerance,
+        Require(FrameworkCompatibility.IsFinite(actual) && Math.Abs(actual - expected) <= tolerance,
             $"{name}: expected {expected:G17} +/- {tolerance:G5}, actual {actual:G17}");
     }
 

@@ -2,6 +2,8 @@
 
 [English](ReadMe.md) | **简体中文**
 
+**当前目标框架：.NET Framework 4.6.1（`net461`）。** 主程序和回归检查均已迁移，运行时不需要 .NET 8。
+
 用 C# 和 WinForms 编写的 PID 仿真程序，包含水箱液位、烤箱温度和电机转速三个场景。运行时可以修改设定值、调整 PID 参数、施加扰动，并查看反馈值和控制输出的变化。界面支持中文和英文。
 
 项目用于学习 PID、练习参数整定，也适合在教学中比较不同控制对象的响应。
@@ -64,26 +66,45 @@
 
 主窗体 `frmMain` 承载三个标签页，场景分别封装在 `usWaterTank`、`usOven` 和 `usMotor` 中。页面控件保存在各自的 `.Designer.cs` 文件中，可以用 Visual Studio 设计器调整布局。
 
+## .NET Framework 4.6.1 迁移
+
+本次迁移保留 PID 计算公式、参数单位、默认整定值、抗积分饱和策略、手自动切换、炉门联锁和过程模型方程。
+核心源文件针对旧框架缺少的 API 做了兼容性替换，没有重新设计控制算法。
+烤箱的 `Span` 临时缓冲区改为可复用数组，并显式保留原版字体与 DPI 设置，避免页面缩放变化。
+
+2026-11-15 验证结果：
+
+- 使用 .NET Framework 4.6.1 引用程序集，Debug、Release 编译均通过。
+- 原有 76 项回归检查、27 项界面与目标框架检查全部通过。
+- 运行验证使用开发机上的 .NET Framework 4.8；尚未在仅安装 4.6.1 的机器上实测。
+
 ## 编译与运行
 
 开发环境：
 
 - Windows 10 或 Windows 11。
-- .NET SDK 9.0.315，版本由 `global.json` 固定。
-- .NET 8 Windows Desktop Runtime，供程序运行使用。
-- 使用 Visual Studio 时，安装“.NET 桌面开发”工作负载，建议使用 Visual Studio 2022 17.14 或更高版本。
+- Visual Studio 2022 17.14 或更高版本，安装“.NET 桌面开发”工作负载。
+- .NET Framework 4.6.1 Developer Pack / Targeting Pack，供编译时使用。
+- .NET SDK 9.0.315，版本由 `global.json` 固定，仅用于 SDK 风格项目和 C# 12 编译。
+- 程序运行需要 .NET Framework 4.6.1 或兼容的更高 4.x 版本。
 
-项目的目标框架为 `net8.0-windows`。在仓库根目录执行：
+主程序和回归项目均以 `net461` 为目标。运行程序不需要 .NET 8 或 .NET SDK。
+在 Visual Studio 的 Developer PowerShell 中，进入仓库根目录执行：
 
 ```powershell
-dotnet restore .\pid_loop_CSharp.sln
-dotnet build .\pid_loop_CSharp.sln -c Release --no-restore
-dotnet run --project .\pid_loop_CSharp\pid_loop_CSharp.csproj -c Release --no-build
+msbuild .\pid_loop_CSharp.sln /restore /p:Configuration=Release
+.\pid_loop_CSharp\bin\Release\net461\pid_loop_CSharp.exe
 ```
 
 也可以用 Visual Studio 打开 `pid_loop_CSharp.sln`，将主项目设为启动项目后运行。
 
-编译时会将 `pid_loop.cfg`、`pid_sampling.cfg` 和 PID 示意图复制到输出目录。复制程序到其他位置时，请一并保留这些文件。`pid_sampling.cfg` 中的采样设置用于水箱场景；其中的真实 I/O 周期是预留参数，不会启用硬件通信。
+主程序包含 WinForms 图标资源，请使用 Visual Studio 提供的 MSBuild；仅用
+`dotnet build` 干净构建时不能处理这些非字符串资源。
+
+部署时复制完整输出目录，包括 `pid_loop_CSharp.exe.config`、`System.ValueTuple.dll`、
+`en` 语言资源目录、`pid_loop.cfg`、`pid_sampling.cfg` 和 `Assets` 下的 PID 示意图。
+其中 `System.ValueTuple` 是供 4.6.1 使用的微软兼容包，用于保留现有元组代码。
+`pid_sampling.cfg` 中的采样设置用于水箱场景；其中的真实 I/O 周期是预留参数，不会启用硬件通信。
 
 ## 回归检查
 
@@ -92,7 +113,8 @@ dotnet run --project .\pid_loop_CSharp\pid_loop_CSharp.csproj -c Release --no-bu
 在仓库根目录运行：
 
 ```powershell
-dotnet run --project .\tests\PidLoop.RegressionTests\PidLoop.RegressionTests.csproj -c Release
+msbuild .\tests\PidLoop.RegressionTests\PidLoop.RegressionTests.csproj /restore /p:Configuration=Release
+.\tests\PidLoop.RegressionTests\bin\Release\net461\PidLoop.RegressionTests.exe
 ```
 
 该项目未加入主解决方案，需要单独运行。

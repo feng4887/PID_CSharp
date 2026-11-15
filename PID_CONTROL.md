@@ -6,6 +6,11 @@ manual tracking, retuning and zero-bias P-mode state. Each scene has its own
 controller instance. Scene adapters handle process units, signal direction,
 physical models and simulation clocks.
 
+Both projects target .NET Framework 4.6.1. `FrameworkCompatibility.cs` supplies
+equivalent finite-number, clamp and argument checks, plus the compiler marker
+for immutable records. `System.ValueTuple` supplies tuple types on this target.
+The C# 12 compiler requirement is independent of the deployed runtime version.
+
 ## Algorithm and defaults
 
 - Position form with `error = filtered PV - SP` and `Kp = Gain / 100`.

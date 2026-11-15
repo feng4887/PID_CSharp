@@ -139,6 +139,7 @@ namespace pid_loop_CSharp
             // frmMain
             AutoScaleDimensions = new SizeF(7F, 17F);
             AutoScaleMode = AutoScaleMode.Font;
+            Font = new Font("Microsoft YaHei UI", 9F);
             BackColor = SystemColors.Control;
             ClientSize = new Size(906, 804);
             Controls.Add(scenarioTabs);

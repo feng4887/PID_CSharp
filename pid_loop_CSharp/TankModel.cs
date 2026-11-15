@@ -41,7 +41,7 @@ namespace pid_loop_CSharp
         /// <summary>Sets the initial volume and clears cumulative balances.</summary>
         public void Reset(double volumeLiters)
         {
-            if (!double.IsFinite(volumeLiters) || volumeLiters < 0 ||
+            if (!FrameworkCompatibility.IsFinite(volumeLiters) || volumeLiters < 0 ||
                 volumeLiters > CapacityLiters)
                 throw new ArgumentOutOfRangeException(nameof(volumeLiters));
 
@@ -60,10 +60,10 @@ namespace pid_loop_CSharp
         public void Step(double inletFlowLitersPerMinute, double outletPercent,
             double dtSeconds)
         {
-            if (!double.IsFinite(inletFlowLitersPerMinute) ||
+            if (!FrameworkCompatibility.IsFinite(inletFlowLitersPerMinute) ||
                 inletFlowLitersPerMinute < 0)
                 throw new ArgumentOutOfRangeException(nameof(inletFlowLitersPerMinute));
-            if (!double.IsFinite(outletPercent) || outletPercent < 0 ||
+            if (!FrameworkCompatibility.IsFinite(outletPercent) || outletPercent < 0 ||
                 outletPercent > FullOpeningPercent)
                 throw new ArgumentOutOfRangeException(nameof(outletPercent));
             RequirePositive(dtSeconds, nameof(dtSeconds));
@@ -80,14 +80,14 @@ namespace pid_loop_CSharp
             double totalOverflow = OverflowLiters + overflow;
             double totalUnserved = UnservedOutflowLiters + requestedOutflow - outflow;
             double actualFlow = outflow / dtSeconds * SecondsPerMinute;
-            if (!double.IsFinite(available) || !double.IsFinite(requestedOutflow) ||
-                !double.IsFinite(totalInflow) || !double.IsFinite(totalOutflow) ||
-                !double.IsFinite(totalOverflow) || !double.IsFinite(totalUnserved) ||
-                !double.IsFinite(actualFlow))
+            if (!FrameworkCompatibility.IsFinite(available) || !FrameworkCompatibility.IsFinite(requestedOutflow) ||
+                !FrameworkCompatibility.IsFinite(totalInflow) || !FrameworkCompatibility.IsFinite(totalOutflow) ||
+                !FrameworkCompatibility.IsFinite(totalOverflow) || !FrameworkCompatibility.IsFinite(totalUnserved) ||
+                !FrameworkCompatibility.IsFinite(actualFlow))
                 throw new ArgumentOutOfRangeException(nameof(dtSeconds),
                     "The step would exceed the numerical range of the tank model.");
 
-            VolumeLiters = Math.Clamp(remaining, 0, CapacityLiters);
+            VolumeLiters = FrameworkCompatibility.Clamp(remaining, 0, CapacityLiters);
             TotalInflowLiters = totalInflow;
             TotalOutflowLiters = totalOutflow;
             OverflowLiters = totalOverflow;
@@ -97,7 +97,7 @@ namespace pid_loop_CSharp
 
         private static void RequirePositive(double value, string parameterName)
         {
-            if (!double.IsFinite(value) || value <= 0)
+            if (!FrameworkCompatibility.IsFinite(value) || value <= 0)
                 throw new ArgumentOutOfRangeException(parameterName);
         }
     }

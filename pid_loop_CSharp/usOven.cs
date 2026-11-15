@@ -82,7 +82,7 @@ namespace pid_loop_CSharp
         private void SimulationTimer_Tick(object? sender, EventArgs e)
         {
             double clockSeconds = _clock.Elapsed.TotalSeconds;
-            double elapsedSeconds = Math.Clamp(clockSeconds - _lastClockSeconds,
+            double elapsedSeconds = FrameworkCompatibility.Clamp(clockSeconds - _lastClockSeconds,
                 0, MaximumElapsedSeconds);
             _lastClockSeconds = clockSeconds;
 
@@ -212,7 +212,7 @@ namespace pid_loop_CSharp
             OvenModel model = _simulation.Model;
             txtTemperature.Text = model.MeasuredTemperatureCelsius.ToString("0.0");
             txtOutput.Text = _simulation.OutputPercent.ToString("0.0") + " %";
-            prgPower.Value = (int)Math.Round(Math.Clamp(_simulation.OutputPercent, 0, 100));
+            prgPower.Value = (int)Math.Round(FrameworkCompatibility.Clamp(_simulation.OutputPercent, 0, 100));
             double error = _simulation.SetpointCelsius - model.MeasuredTemperatureCelsius;
             lblError.Text = (_isChinese ? "偏差 SP − PV：" : "Error SP − PV: ")
                 + error.ToString("+0.0;-0.0;0.0") + " °C";

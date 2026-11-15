@@ -16,7 +16,7 @@ namespace pid_loop_CSharp
 
         public frmMain(PidSamplingSettings samplingSettings)
         {
-            ArgumentNullException.ThrowIfNull(samplingSettings);
+            FrameworkCompatibility.ThrowIfNull(samplingSettings, nameof(samplingSettings));
             samplingSettings.Validate();
             InitializeComponent();
             usWaterTank1.ConfigureSampling(samplingSettings);

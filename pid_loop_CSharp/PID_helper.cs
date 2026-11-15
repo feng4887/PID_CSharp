@@ -47,11 +47,11 @@ namespace pid_loop_CSharp
             ValidateNonNegative(MeasurementFilterTimeSeconds, nameof(MeasurementFilterTimeSeconds));
             ValidateNonNegative(IntegralDeadband, nameof(IntegralDeadband));
             ValidateNonNegative(TrackingTimeSeconds, nameof(TrackingTimeSeconds));
-            if (!double.IsFinite(DerivativeFilterRatio) || DerivativeFilterRatio <= 0)
+            if (!FrameworkCompatibility.IsFinite(DerivativeFilterRatio) || DerivativeFilterRatio <= 0)
                 throw new ArgumentOutOfRangeException(nameof(DerivativeFilterRatio));
-            if (!Enum.IsDefined(AntiWindupMode))
+            if (!Enum.IsDefined(typeof(PidAntiWindupMode), AntiWindupMode))
                 throw new ArgumentOutOfRangeException(nameof(AntiWindupMode));
-            if (!double.IsFinite(MinimumOutput) || !double.IsFinite(MaximumOutput)
+            if (!FrameworkCompatibility.IsFinite(MinimumOutput) || !FrameworkCompatibility.IsFinite(MaximumOutput)
                 || MinimumOutput >= MaximumOutput)
                 throw new ArgumentOutOfRangeException(nameof(MinimumOutput));
             if (double.IsNaN(MinimumIntegral) || double.IsNaN(MaximumIntegral)
@@ -62,7 +62,7 @@ namespace pid_loop_CSharp
 
         private static void ValidateNonNegative(double value, string name)
         {
-            if (!double.IsFinite(value) || value < 0)
+            if (!FrameworkCompatibility.IsFinite(value) || value < 0)
                 throw new ArgumentOutOfRangeException(name);
         }
     }
@@ -93,7 +93,7 @@ namespace pid_loop_CSharp
 
         public PidController(PidSettings settings)
         {
-            ArgumentNullException.ThrowIfNull(settings);
+            FrameworkCompatibility.ThrowIfNull(settings, nameof(settings));
             settings.Validate();
             _settings = settings;
             Output = ClampOutput(0);
@@ -142,12 +142,12 @@ namespace pid_loop_CSharp
         /// </summary>
         public void Configure(PidSettings settings)
         {
-            ArgumentNullException.ThrowIfNull(settings);
+            FrameworkCompatibility.ThrowIfNull(settings, nameof(settings));
             settings.Validate();
             if (settings == _settings)
                 return;
 
-            double output = Math.Clamp(Output, settings.MinimumOutput, settings.MaximumOutput);
+            double output = FrameworkCompatibility.Clamp(Output, settings.MinimumOutput, settings.MaximumOutput);
             double proportional = ProportionalTerm;
             double derivative = DerivativeTerm;
             double integral = IntegralTerm;
@@ -167,7 +167,7 @@ namespace pid_loop_CSharp
             {
                 double command = proportional + integral + derivative;
                 RequireFinite(command, nameof(settings));
-                output = Math.Clamp(command, settings.MinimumOutput, settings.MaximumOutput);
+                output = FrameworkCompatibility.Clamp(command, settings.MinimumOutput, settings.MaximumOutput);
             }
 
             _settings = settings;
@@ -363,12 +363,12 @@ namespace pid_loop_CSharp
         private double ClampOutput(double output)
         {
             RequireFinite(output, nameof(output));
-            return Math.Clamp(output, _settings.MinimumOutput, _settings.MaximumOutput);
+            return FrameworkCompatibility.Clamp(output, _settings.MinimumOutput, _settings.MaximumOutput);
         }
 
         private static double ClampIntegral(double integral, PidSettings settings)
         {
-            double clamped = Math.Clamp(integral, settings.MinimumIntegral, settings.MaximumIntegral);
+            double clamped = FrameworkCompatibility.Clamp(integral, settings.MinimumIntegral, settings.MaximumIntegral);
             RequireFinite(clamped, nameof(integral));
             return clamped;
         }
@@ -377,13 +377,13 @@ namespace pid_loop_CSharp
         {
             RequireFinite(setpoint, nameof(setpoint));
             RequireFinite(pv, nameof(pv));
-            if (!double.IsFinite(dtSeconds) || dtSeconds <= 0)
+            if (!FrameworkCompatibility.IsFinite(dtSeconds) || dtSeconds <= 0)
                 throw new ArgumentOutOfRangeException(nameof(dtSeconds));
         }
 
         private static void RequireFinite(double value, string name)
         {
-            if (!double.IsFinite(value))
+            if (!FrameworkCompatibility.IsFinite(value))
                 throw new ArgumentOutOfRangeException(name, "A finite value is required.");
         }
     }

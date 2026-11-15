@@ -43,7 +43,7 @@ namespace pid_loop_CSharp
         /// </summary>
         public static PidSamplingSettings Load(string path)
         {
-            ArgumentException.ThrowIfNullOrWhiteSpace(path);
+            FrameworkCompatibility.ThrowIfNullOrWhiteSpace(path, nameof(path));
             var defaults = new PidSamplingSettings();
             if (!File.Exists(path))
             {
@@ -59,7 +59,7 @@ namespace pid_loop_CSharp
             {
                 lineNumber++;
                 int comment = rawLine.IndexOf('#');
-                string line = (comment < 0 ? rawLine : rawLine[..comment]).Trim();
+                string line = (comment < 0 ? rawLine : rawLine.Substring(0, comment)).Trim();
                 if (line.Length == 0)
                     continue;
 
@@ -68,8 +68,8 @@ namespace pid_loop_CSharp
                     line.IndexOf('=', separator + 1) >= 0)
                     throw InvalidLine(path, lineNumber, "Expected one key=value setting.");
 
-                string key = line[..separator].Trim();
-                string value = line[(separator + 1)..].Trim();
+                string key = line.Substring(0, separator).Trim();
+                string value = line.Substring(separator + 1).Trim();
                 bool isSimulation = key.Equals(nameof(SimulationSampleSeconds),
                     StringComparison.OrdinalIgnoreCase);
                 bool isRealIo = key.Equals(nameof(RealIoSamplePeriodSeconds),
@@ -79,7 +79,7 @@ namespace pid_loop_CSharp
                 if (!seenKeys.Add(key))
                     throw InvalidLine(path, lineNumber, $"Duplicate sampling setting '{key}'.");
                 if (!double.TryParse(value, NumberStyles.Float, CultureInfo.InvariantCulture,
-                    out double seconds) || !double.IsFinite(seconds))
+                    out double seconds) || !FrameworkCompatibility.IsFinite(seconds))
                     throw InvalidLine(path, lineNumber, $"'{key}' must be a finite number of seconds.");
 
                 double maximum = isSimulation ? 1 : 60;
@@ -101,7 +101,7 @@ namespace pid_loop_CSharp
         private static void ValidateRange(double value, double minimum, double maximum,
             string name)
         {
-            if (!double.IsFinite(value) || value < minimum || value > maximum)
+            if (!FrameworkCompatibility.IsFinite(value) || value < minimum || value > maximum)
                 throw new ArgumentOutOfRangeException(name, value,
                     $"Sampling time must be between {minimum} and {maximum} seconds.");
         }

@@ -8,7 +8,8 @@ namespace pid_loop_CSharp
         [STAThread]
         static void Main()
         {
-            ApplicationConfiguration.Initialize();
+            Application.EnableVisualStyles();
+            Application.SetCompatibleTextRenderingDefault(false);
             string samplingPath = Path.Combine(AppContext.BaseDirectory, "pid_sampling.cfg");
             PidSamplingSettings samplingSettings;
             try

@@ -97,7 +97,7 @@ namespace pid_loop_CSharp
 
         private static void ValidateRange(double value, double maximum, string name)
         {
-            if (!double.IsFinite(value) || value < 0 || value > maximum)
+            if (!FrameworkCompatibility.IsFinite(value) || value < 0 || value > maximum)
                 throw new ArgumentOutOfRangeException(name);
         }
     }

@@ -81,7 +81,7 @@ namespace pid_loop_CSharp
         private void SimulationTimer_Tick(object? sender, EventArgs e)
         {
             double clockSeconds = _clock.Elapsed.TotalSeconds;
-            double elapsedSeconds = Math.Clamp(clockSeconds - _lastClockSeconds,
+            double elapsedSeconds = FrameworkCompatibility.Clamp(clockSeconds - _lastClockSeconds,
                 0, MaximumElapsedSeconds);
             _lastClockSeconds = clockSeconds;
             if (!_isPaused)

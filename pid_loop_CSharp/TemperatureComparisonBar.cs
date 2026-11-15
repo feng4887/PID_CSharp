@@ -120,7 +120,7 @@ namespace pid_loop_CSharp
         {
             RequireFinite(temperatureCelsius, nameof(temperatureCelsius));
             GetScaleBounds(out float top, out float bottom);
-            double value = Math.Clamp(temperatureCelsius, _minimum, _maximum);
+            double value = FrameworkCompatibility.Clamp(temperatureCelsius, _minimum, _maximum);
             double fraction = (value - _minimum) / (_maximum - _minimum);
             return bottom - (float)(fraction * (bottom - top));
         }
@@ -166,8 +166,8 @@ namespace pid_loop_CSharp
         private void GetScaleBounds(out float top, out float bottom)
         {
             int lastPixel = Math.Max(0, ClientSize.Height - 1);
-            top = Math.Clamp(_scaleTop, 0, lastPixel);
-            bottom = Math.Clamp(_scaleBottom, (int)top, lastPixel);
+            top = FrameworkCompatibility.Clamp(_scaleTop, 0, lastPixel);
+            bottom = FrameworkCompatibility.Clamp(_scaleBottom, (int)top, lastPixel);
         }
 
         private void DrawTicks(Graphics graphics, Pen tickPen, Brush textBrush, float right)
@@ -192,7 +192,7 @@ namespace pid_loop_CSharp
             graphics.DrawLine(tickPen, right + 2, y, right + 6, y);
             string label = temperature.ToString("0.##");
             SizeF size = graphics.MeasureString(label, Font);
-            float textY = Math.Clamp(y - size.Height / 2, 0,
+            float textY = FrameworkCompatibility.Clamp(y - size.Height / 2, 0,
                 Math.Max(0, ClientSize.Height - size.Height));
             graphics.DrawString(label, Font, textBrush, right + 9, textY);
         }
@@ -226,13 +226,13 @@ namespace pid_loop_CSharp
         {
             RequireFinite(minimum, nameof(minimum));
             RequireFinite(maximum, nameof(maximum));
-            if (minimum >= maximum || !double.IsFinite(maximum - minimum))
+            if (minimum >= maximum || !FrameworkCompatibility.IsFinite(maximum - minimum))
                 throw new ArgumentOutOfRangeException(nameof(maximum));
         }
 
         private static void RequireFinite(double value, string name)
         {
-            if (!double.IsFinite(value))
+            if (!FrameworkCompatibility.IsFinite(value))
                 throw new ArgumentOutOfRangeException(name);
         }
     }

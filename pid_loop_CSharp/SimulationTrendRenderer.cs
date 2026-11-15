@@ -29,13 +29,13 @@ namespace pid_loop_CSharp
         {
             if (history.Count > 0)
             {
-                SimulationTrendSample previous = history[^1];
+                SimulationTrendSample previous = history[history.Count - 1];
                 if (sample.Setpoint != previous.Setpoint
                     && sample.TimeSeconds > previous.TimeSeconds)
                     history.Add(sample with { Setpoint = previous.Setpoint });
                 if (sample.TimeSeconds == previous.TimeSeconds
                     && sample.Setpoint == previous.Setpoint)
-                    history[^1] = sample;
+                    history[history.Count - 1] = sample;
                 else
                     history.Add(sample);
             }

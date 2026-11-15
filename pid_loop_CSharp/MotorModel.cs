@@ -31,7 +31,7 @@ namespace pid_loop_CSharp
         /// <summary>Apply an opposing load without changing current or shaft speed.</summary>
         public void SetLoadTorque(double torqueNewtonMeters)
         {
-            if (!double.IsFinite(torqueNewtonMeters) || torqueNewtonMeters < 0
+            if (!FrameworkCompatibility.IsFinite(torqueNewtonMeters) || torqueNewtonMeters < 0
                 || torqueNewtonMeters > MaximumLoadTorqueNewtonMeters)
                 throw new ArgumentOutOfRangeException(nameof(torqueNewtonMeters));
             LoadTorqueNewtonMeters = torqueNewtonMeters;
@@ -50,7 +50,7 @@ namespace pid_loop_CSharp
         public void Step(double driveOutputPercent, double dtSeconds)
         {
             ValidateStep(dtSeconds);
-            if (!double.IsFinite(driveOutputPercent) || driveOutputPercent < 0
+            if (!FrameworkCompatibility.IsFinite(driveOutputPercent) || driveOutputPercent < 0
                 || driveOutputPercent > 100)
                 throw new ArgumentOutOfRangeException(nameof(driveOutputPercent));
 
@@ -64,7 +64,7 @@ namespace pid_loop_CSharp
                     - BackEmfConstantVoltsPerRadianPerSecond
                         * AngularSpeedRadiansPerSecond) / ArmatureInductanceHenries;
                 // A current-limited unipolar drive has no reverse or regenerative torque.
-                CurrentAmperes = Math.Clamp(CurrentAmperes + currentRate * stepSeconds,
+                CurrentAmperes = FrameworkCompatibility.Clamp(CurrentAmperes + currentRate * stepSeconds,
                     0, MaximumCurrentAmperes);
                 double acceleration = (ElectromagneticTorqueNewtonMeters
                     - ViscousFrictionNewtonMeterSeconds * AngularSpeedRadiansPerSecond
@@ -76,7 +76,7 @@ namespace pid_loop_CSharp
 
         internal static void ValidateStep(double dtSeconds)
         {
-            if (!double.IsFinite(dtSeconds) || dtSeconds <= 0 || dtSeconds > 1)
+            if (!FrameworkCompatibility.IsFinite(dtSeconds) || dtSeconds <= 0 || dtSeconds > 1)
                 throw new ArgumentOutOfRangeException(nameof(dtSeconds));
         }
     }

@@ -20,14 +20,13 @@ namespace pid_loop_CSharp
             trkSP.HandleCreated += SetpointGeometryChanged;
             pnlTankScene.HandleCreated += SetpointGeometryChanged;
             trkSP.SizeChanged += SetpointGeometryChanged;
-            trkSP.DpiChangedAfterParent += SetpointGeometryChanged;
             pnlTankScene.LocationChanged += SetpointGeometryChanged;
             FormLoad();
         }
 
         internal void ConfigureSampling(PidSamplingSettings samplingSettings)
         {
-            ArgumentNullException.ThrowIfNull(samplingSettings);
+            FrameworkCompatibility.ThrowIfNull(samplingSettings, nameof(samplingSettings));
             samplingSettings.Validate();
             if (_isStarted) throw new InvalidOperationException("Sampling is configured before loading the scene.");
             _samplingSettings = samplingSettings;
@@ -239,7 +238,7 @@ namespace pid_loop_CSharp
             // Seed only the initial integral bias from the initial flow balance.
             // Disturbance rejection still relies on feedback, not feedforward.
             double initialBias = 100 * invalve / _tank.MaxOutletFlowLitersPerMinute;
-            _pidController.Reset(pv, Math.Clamp(initialBias, 0, 100));
+            _pidController.Reset(pv, FrameworkCompatibility.Clamp(initialBias, 0, 100));
 
             trkSP.Value = 1500;
             sp = trkSP.Value;
@@ -605,7 +604,7 @@ namespace pid_loop_CSharp
                 GetTrackBarRectangle(trkSP.Handle, TrackBarGetThumbRectangle,
                     IntPtr.Zero, out TrackBarRectangle thumb);
                 Point center = trkSP.PointToScreen(new Point(0, thumb.CenterY));
-                spY = Math.Clamp(pnlTankScene.PointToClient(center).Y,
+                spY = FrameworkCompatibility.Clamp(pnlTankScene.PointToClient(center).Y,
                     tankTop, tankBottom);
             }
             using var penSP = new Pen(Color.Red, 1.5f) { DashStyle = System.Drawing.Drawing2D.DashStyle.Dash };
@@ -914,12 +913,12 @@ namespace pid_loop_CSharp
         /// <returns></returns>
         private static double ClampParam(TextBox t, int lo, int hi, double previous)
         {
-            if (!double.TryParse(t.Text, out double value) || !double.IsFinite(value))
+            if (!double.TryParse(t.Text, out double value) || !FrameworkCompatibility.IsFinite(value))
             {
                 if (!t.Focused) t.Text = previous.ToString();
                 return previous;
             }
-            double clamped = Math.Clamp(value, lo, hi);
+            double clamped = FrameworkCompatibility.Clamp(value, lo, hi);
             if (value != clamped && !t.Focused) t.Text = clamped.ToString();
             return clamped;
         }

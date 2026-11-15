@@ -136,7 +136,7 @@ namespace pid_loop_CSharp
 
         private static void ValidateNonnegative(double value, string name)
         {
-            if (!double.IsFinite(value) || value < 0)
+            if (!FrameworkCompatibility.IsFinite(value) || value < 0)
                 throw new ArgumentOutOfRangeException(name);
         }
     }

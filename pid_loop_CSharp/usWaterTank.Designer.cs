@@ -533,6 +533,7 @@ namespace pid_loop_CSharp
             pnlPIDBlock.Controls.Add(_pidDiagramBrowser);
             AutoScaleDimensions = new SizeF(7F, 17F);
             AutoScaleMode = AutoScaleMode.Font;
+            Font = new Font("Microsoft YaHei UI", 9F);
             AutoScroll = true;
             AutoScrollMinSize = new Size(880, 726);
             BackColor = SystemColors.Control;

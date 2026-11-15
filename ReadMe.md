@@ -2,6 +2,9 @@
 
 **English** | [简体中文](README.zh-CN.md)
 
+**Current target: .NET Framework 4.6.1 (`net461`).** The application and
+regression runner do not require .NET 8 to run.
+
 PID_CSharp is a C# WinForms simulator for water-tank level, oven temperature
 and DC motor speed control. Change the setpoint and PID tuning, apply
 disturbances, and watch the process and controller output respond. The
@@ -112,31 +115,55 @@ UserControl: `usWaterTank`, `usOven` and `usMotor`. Page controls are declared
 in their `.Designer.cs` files, so layouts can be edited in the Visual Studio
 Designer.
 
+## .NET Framework 4.6.1 migration
+
+The migration preserves the PID equations, parameter units, default tuning,
+anti-windup strategies, manual/automatic transfer, oven door interlock and
+process-model equations. Core source files have compatibility edits for APIs
+that are unavailable in .NET Framework 4.6.1; the control algorithm was not
+redesigned. The oven's temporary `Span` buffer is now a reusable array, and
+explicit font and DPI settings preserve the existing page layout.
+
+Validation on 2026-11-15:
+
+- Debug and Release builds passed against the .NET Framework 4.6.1 reference assemblies.
+- All 76 existing regression checks and 27 UI/target-framework checks passed.
+- Runtime checks used .NET Framework 4.8 on the development machine. A machine
+  with only .NET Framework 4.6.1 installed has not been tested.
+
 ## Build and run
 
 Development requirements:
 
 - Windows 10 or Windows 11.
-- .NET SDK 9.0.315, pinned in `global.json`.
-- .NET 8 Windows Desktop Runtime to run the application.
-- Optional: Visual Studio 2022 17.14 or later with the
+- Visual Studio 2022 17.14 or later with the
   **.NET desktop development** workload installed.
+- .NET Framework 4.6.1 Developer Pack / Targeting Pack for compilation.
+- .NET SDK 9.0.315, pinned in `global.json`, for the SDK-style projects and
+  C# 12 compiler only.
+- .NET Framework 4.6.1 or a compatible later 4.x runtime to run the application.
 
-The application targets `net8.0-windows`. From the repository root, run:
+Both the application and regression runner target `net461`. Running the
+application requires neither .NET 8 nor a .NET SDK. In Visual Studio's
+Developer PowerShell, run these commands from the repository root:
 
 ```powershell
-dotnet restore .\pid_loop_CSharp.sln
-dotnet build .\pid_loop_CSharp.sln -c Release --no-restore
-dotnet run --project .\pid_loop_CSharp\pid_loop_CSharp.csproj -c Release --no-build
+msbuild .\pid_loop_CSharp.sln /restore /p:Configuration=Release
+.\pid_loop_CSharp\bin\Release\net461\pid_loop_CSharp.exe
 ```
 
 You can also open `pid_loop_CSharp.sln` in Visual Studio, set the main project
 as the startup project and run it.
 
-The build copies `pid_loop.cfg`, `pid_sampling.cfg` and the PID diagram to
-the output directory. Keep these files with the application when copying it
-to another location. The sampling settings in `pid_sampling.cfg` apply to
-the tank scene. The real I/O period setting is reserved for future integration
+Use the MSBuild supplied with Visual Studio for the application's WinForms
+icon resources. A clean `dotnet build` cannot process these non-string resources.
+
+Deploy the complete output directory, including `pid_loop_CSharp.exe.config`,
+`System.ValueTuple.dll`, the `en` satellite-resource directory, `pid_loop.cfg`,
+`pid_sampling.cfg` and the PID diagram under `Assets`. `System.ValueTuple` is
+Microsoft's compatibility package that preserves the existing tuple code on
+.NET Framework 4.6.1. The sampling settings in `pid_sampling.cfg` apply to the
+tank scene. The real I/O period setting is reserved for future integration
 and does not enable hardware communication.
 
 ## Regression checks
@@ -149,7 +176,8 @@ parameter validation and the oven door interlock.
 Run it from the repository root:
 
 ```powershell
-dotnet run --project .\tests\PidLoop.RegressionTests\PidLoop.RegressionTests.csproj -c Release
+msbuild .\tests\PidLoop.RegressionTests\PidLoop.RegressionTests.csproj /restore /p:Configuration=Release
+.\tests\PidLoop.RegressionTests\bin\Release\net461\PidLoop.RegressionTests.exe
 ```
 
 This project is not included in the main solution and must be run separately.

@@ -46,7 +46,7 @@ internal static class MotorRegressionChecks
 
     internal static void SteadyStateModes()
     {
-        foreach (PidControlMode mode in Enum.GetValues<PidControlMode>())
+        foreach (PidControlMode mode in Enum.GetValues(typeof(PidControlMode)))
         {
             var motor = new MotorSimulation();
             motor.Configure(0.1, 0.65, 0.03, mode);
@@ -184,7 +184,7 @@ internal static class MotorRegressionChecks
         for (int index = 0; index < (int)Math.Round(seconds / Dt); index++)
         {
             motor.Step(Dt);
-            Require(double.IsFinite(motor.Model.SpeedRpm) && motor.Model.SpeedRpm >= 0,
+            Require(FrameworkCompatibility.IsFinite(motor.Model.SpeedRpm) && motor.Model.SpeedRpm >= 0,
                 "Shaft speed must remain finite and nonnegative");
             Require(motor.OutputPercent is >= 0 and <= 100,
                 "Drive output must remain bounded");
@@ -197,7 +197,7 @@ internal static class MotorRegressionChecks
     }
 
     private static void Near(double actual, double expected, double tolerance, string message)
-        => Require(double.IsFinite(actual) && Math.Abs(actual - expected) <= tolerance,
+        => Require(FrameworkCompatibility.IsFinite(actual) && Math.Abs(actual - expected) <= tolerance,
             $"{message}: expected {expected:G17}, actual {actual:G17}");
 
     private static void Require(bool value, string message)

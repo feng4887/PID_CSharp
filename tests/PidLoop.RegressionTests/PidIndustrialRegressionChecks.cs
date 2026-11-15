@@ -222,7 +222,7 @@ internal static class PidIndustrialRegressionChecks
         var oven = new OvenSimulation();
         var motor = new MotorSimulation();
         PidController ovenController = oven.Controller, motorController = motor.Controller;
-        foreach (PidControlMode mode in Enum.GetValues<PidControlMode>())
+        foreach (PidControlMode mode in Enum.GetValues(typeof(PidControlMode)))
         {
             oven.Configure(2.4, 75, 12, mode);
             motor.Configure(0.1, 0.65, 0.03, mode);
@@ -233,7 +233,7 @@ internal static class PidIndustrialRegressionChecks
 
     internal static void TrackingAcrossStrategies()
     {
-        foreach (PidAntiWindupMode mode in Enum.GetValues<PidAntiWindupMode>())
+        foreach (PidAntiWindupMode mode in Enum.GetValues(typeof(PidAntiWindupMode)))
         {
             PidSettings settings = new(100, 1, 0.5) { AntiWindupMode = mode };
             var pid = new PidController(settings);
@@ -268,7 +268,7 @@ internal static class PidIndustrialRegressionChecks
                 TrackingTimeSeconds = 0.5, IntegralDeadband = 0.001,
                 MinimumIntegral = -100, MaximumIntegral = 100
             });
-        foreach (PidControlMode mode in Enum.GetValues<PidControlMode>())
+        foreach (PidControlMode mode in Enum.GetValues(typeof(PidControlMode)))
         {
             oven.Configure(2.4, 75, 12, mode);
             motor.Configure(0.1, 0.65, 0.03, mode);
@@ -318,7 +318,7 @@ internal static class PidIndustrialRegressionChecks
 
     private static void Near(double actual, double expected, string message)
     {
-        if (!double.IsFinite(actual) || Math.Abs(actual - expected) > 1e-9)
+        if (!FrameworkCompatibility.IsFinite(actual) || Math.Abs(actual - expected) > 1e-9)
             throw new InvalidOperationException($"{message}: expected {expected}, got {actual}");
     }
 }

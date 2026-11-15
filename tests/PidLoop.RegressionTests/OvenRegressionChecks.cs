@@ -28,7 +28,7 @@ internal static class OvenRegressionChecks
 
     internal static void SteadyStateModes()
     {
-        foreach (PidControlMode mode in Enum.GetValues<PidControlMode>())
+        foreach (PidControlMode mode in Enum.GetValues(typeof(PidControlMode)))
         {
             var oven = new OvenSimulation();
             oven.Configure(2.4, 75, 12, mode);
@@ -208,7 +208,7 @@ internal static class OvenRegressionChecks
         Run(oven, 1200);
         oven.ToggleDoor();
         Run(oven, 5);
-        foreach (PidControlMode mode in Enum.GetValues<PidControlMode>())
+        foreach (PidControlMode mode in Enum.GetValues(typeof(PidControlMode)))
         {
             oven.Configure(2.4, 20, 8, mode);
             Near(oven.OutputPercent, 0, 0, "Retuning must not report the PID command as applied power");
@@ -285,7 +285,7 @@ internal static class OvenRegressionChecks
         for (int index = 0; index < (int)Math.Round(seconds / interval); index++)
         {
             oven.Step(interval);
-            Require(double.IsFinite(oven.OutputPercent) && oven.OutputPercent is >= 0 and <= 100,
+            Require(FrameworkCompatibility.IsFinite(oven.OutputPercent) && oven.OutputPercent is >= 0 and <= 100,
                 "Heating output must stay finite and bounded");
             minimum = Math.Min(minimum, oven.Model.MeasuredTemperatureCelsius);
         }
@@ -294,7 +294,7 @@ internal static class OvenRegressionChecks
 
     private static void Near(double actual, double expected, double tolerance, string name)
     {
-        Require(double.IsFinite(actual) && Math.Abs(actual - expected) <= tolerance,
+        Require(FrameworkCompatibility.IsFinite(actual) && Math.Abs(actual - expected) <= tolerance,
             $"{name}: expected {expected:G17} +/- {tolerance:G5}, actual {actual:G17}");
     }
 

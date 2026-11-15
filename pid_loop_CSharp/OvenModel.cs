@@ -27,6 +27,7 @@ namespace pid_loop_CSharp
         private const double AmbientAirDensityKilogramsPerCubicMeter = 1.184;
         private const double AirSpecificHeatKjPerKgK = 1.005;
         private const double SensorTimeSeconds = 1.2;
+        private readonly double[] _partFlows = new double[MaximumWorkpieces];
         private readonly List<double> _workpieceTemperatures = new();
         private readonly ReadOnlyCollection<double> _readOnlyTemperatures;
 
@@ -105,7 +106,7 @@ namespace pid_loop_CSharp
         /// <summary>Advances an applied heating power, using stable substeps.</summary>
         public void Step(double heaterOutputPercent, double dtSeconds)
         {
-            if (!double.IsFinite(heaterOutputPercent) || heaterOutputPercent < 0
+            if (!FrameworkCompatibility.IsFinite(heaterOutputPercent) || heaterOutputPercent < 0
                 || heaterOutputPercent > 100)
                 throw new ArgumentOutOfRangeException(nameof(heaterOutputPercent));
             ValidateStep(dtSeconds);
@@ -120,7 +121,7 @@ namespace pid_loop_CSharp
         /// <summary>Rejects invalid intervals before a model or controller changes.</summary>
         internal static void ValidateStep(double dtSeconds)
         {
-            if (!double.IsFinite(dtSeconds) || dtSeconds <= 0
+            if (!FrameworkCompatibility.IsFinite(dtSeconds) || dtSeconds <= 0
                 || dtSeconds > MaximumStepSeconds)
                 throw new ArgumentOutOfRangeException(nameof(dtSeconds));
         }
@@ -135,13 +136,12 @@ namespace pid_loop_CSharp
             double ventilationLoss = VentilationLossKw;
             double ambientLoss = ClosedLossKwPerK
                 * (ChamberTemperatureCelsius - AmbientTemperatureCelsius) + ventilationLoss;
-            Span<double> partFlows = stackalloc double[MaximumWorkpieces];
             double totalPartFlow = 0;
             for (int index = 0; index < _workpieceTemperatures.Count; index++)
             {
-                partFlows[index] = WorkpieceConductanceKwPerK
+                _partFlows[index] = WorkpieceConductanceKwPerK
                     * (ChamberTemperatureCelsius - _workpieceTemperatures[index]);
-                totalPartFlow += partFlows[index];
+                totalPartFlow += _partFlows[index];
             }
 
             // All internal flows use the previous temperatures to conserve energy.
@@ -150,7 +150,7 @@ namespace pid_loop_CSharp
             ChamberTemperatureCelsius += stepSeconds
                 * (heaterFlow - ambientLoss - totalPartFlow) / ChamberCapacityKjPerK;
             for (int index = 0; index < _workpieceTemperatures.Count; index++)
-                _workpieceTemperatures[index] += stepSeconds * partFlows[index]
+                _workpieceTemperatures[index] += stepSeconds * _partFlows[index]
                     / WorkpieceCapacityKjPerK;
             MeasuredTemperatureCelsius += (1 - Math.Exp(-stepSeconds / SensorTimeSeconds))
                 * (ChamberTemperatureCelsius - MeasuredTemperatureCelsius);

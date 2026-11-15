@@ -31,7 +31,7 @@ namespace pid_loop_CSharp
             get => _setpointCelsius;
             set
             {
-                if (!double.IsFinite(value) || value < MinimumSetpointCelsius
+                if (!FrameworkCompatibility.IsFinite(value) || value < MinimumSetpointCelsius
                     || value > MaximumSetpointCelsius)
                     throw new ArgumentOutOfRangeException(nameof(value));
                 _setpointCelsius = value;
@@ -52,7 +52,7 @@ namespace pid_loop_CSharp
         public void Configure(double proportionalGain, double integralTimeSeconds,
             double derivativeTimeSeconds, PidControlMode mode)
         {
-            if (!double.IsFinite(proportionalGain) || proportionalGain < 0
+            if (!FrameworkCompatibility.IsFinite(proportionalGain) || proportionalGain < 0
                 || proportionalGain > MaximumProportionalGain)
                 throw new ArgumentOutOfRangeException(nameof(proportionalGain));
             ValidateTime(integralTimeSeconds, nameof(integralTimeSeconds));
@@ -104,7 +104,7 @@ namespace pid_loop_CSharp
 
         private static void ValidateTime(double value, string name)
         {
-            if (!double.IsFinite(value) || value < 0 || value > 120)
+            if (!FrameworkCompatibility.IsFinite(value) || value < 0 || value > 120)
                 throw new ArgumentOutOfRangeException(name);
         }
     }

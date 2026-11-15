@@ -82,7 +82,7 @@ namespace pid_loop_CSharp
             get => _workpieceTemperaturesCelsius;
             set
             {
-                ArgumentNullException.ThrowIfNull(value);
+                FrameworkCompatibility.ThrowIfNull(value, nameof(value));
                 if (value.Count < 1 || value.Count > 3)
                     throw new ArgumentOutOfRangeException(nameof(value));
                 var snapshot = new double[value.Count];
@@ -171,7 +171,7 @@ namespace pid_loop_CSharp
             graphics.FillRectangle(shellBrush, BodyLeft + 279, BodyTop + 246, 35, 22);
             graphics.FillPath(shellBrush, body);
 
-            double warmth = Math.Clamp((_temperatureCelsius - 25) / 260, 0, 1);
+            double warmth = FrameworkCompatibility.Clamp((_temperatureCelsius - 25) / 260, 0, 1);
             using var chamberBrush = new SolidBrush(Color.FromArgb(250,
                 (int)Math.Round(247 - warmth * 20), (int)Math.Round(242 - warmth * 37)));
             using var chamber = RoundedRectangle(new RectangleF(BodyLeft + 18,
@@ -193,7 +193,7 @@ namespace pid_loop_CSharp
                 BodyLeft + 296, BodyTop + 189);
             for (int index = 0; index < _workpieceTemperaturesCelsius.Count; index++)
             {
-                double fraction = Math.Clamp(
+                double fraction = FrameworkCompatibility.Clamp(
                     (_workpieceTemperaturesCelsius[index] - 25) / 260, 0, 1);
                 Color color = Blend(Color.FromArgb(127, 162, 184),
                     Color.FromArgb(223, 139, 82), fraction);
@@ -206,7 +206,7 @@ namespace pid_loop_CSharp
 
         private void DrawHeatingElement(Graphics graphics)
         {
-            double heat = Math.Clamp((_heaterTemperatureCelsius - 25) / 330, 0, 1);
+            double heat = FrameworkCompatibility.Clamp((_heaterTemperatureCelsius - 25) / 330, 0, 1);
             using var pen = new Pen(Color.FromArgb((int)(90 + heat * 165),
                 223, 139, 82), 5)
             {
@@ -228,7 +228,7 @@ namespace pid_loop_CSharp
 
         private void DrawConvection(Graphics graphics)
         {
-            double heat = Math.Clamp((_heaterTemperatureCelsius - 25) / 330, 0, 1);
+            double heat = FrameworkCompatibility.Clamp((_heaterTemperatureCelsius - 25) / 330, 0, 1);
             using var pen = new Pen(Color.FromArgb((int)(heat * 90), 232, 154, 96), 2)
             {
                 DashPattern = new[] { 2.5f, 6f },
@@ -324,7 +324,7 @@ namespace pid_loop_CSharp
 
         private static void RequireFinite(double value, string name)
         {
-            if (!double.IsFinite(value))
+            if (!FrameworkCompatibility.IsFinite(value))
                 throw new ArgumentOutOfRangeException(name);
         }
     }

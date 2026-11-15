@@ -1,11 +1,15 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <OutputType>Exe</OutputType>
-    <TargetFramework>net8.0</TargetFramework>
+    <TargetFramework>net461</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
+    <LangVersion>12.0</LangVersion>
+    <Prefer32Bit>false</Prefer32Bit>
+    <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Include="..\..\pid_loop_CSharp\FrameworkCompatibility.cs" Link="FrameworkCompatibility.cs" />
     <Compile Include="..\..\pid_loop_CSharp\PID_helper.cs" Link="PID_helper.cs" />
     <Compile Include="..\..\pid_loop_CSharp\TankModel.cs" Link="TankModel.cs" />
     <Compile Include="..\..\pid_loop_CSharp\PidSamplingSettings.cs" Link="PidSamplingSettings.cs" />
@@ -14,4 +18,8 @@
     <Compile Include="..\..\pid_loop_CSharp\MotorModel.cs" Link="MotorModel.cs" />
     <Compile Include="..\..\pid_loop_CSharp\MotorSimulation.cs" Link="MotorSimulation.cs" />
   </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="System.ValueTuple" Version="4.5.0" />
+  </ItemGroup>
+
 </Project>
