@@ -198,10 +198,22 @@ protection.
 The PID algorithm is encapsulated in a reusable controller; the author accepts
 no liability for any issues arising from its use in engineering projects.
 
-## Screenshot and historical versions
+## Screenshots
 
-The image below shows an earlier water-tank interface. The current source
-contains all three scenes. Archives in [`appDownload/`](appDownload/) are
-historical versions; build from source for the current application.
+The three simulation scenes are shown below. The water-tank screenshot is
+from an earlier version.
 
-![Earlier water-tank interface](images/721241288046b1016de9a5e5a07fe13deb39b28565e1c7d2a3a5f6a3f9c3c87f.jpg)
+### Water-tank level
+
+![Water-tank level control, earlier interface](images/721241288046b1016de9a5e5a07fe13deb39b28565e1c7d2a3a5f6a3f9c3c87f.jpg)
+
+### Oven temperature
+
+![Oven temperature control with the door-open heater interlock](images/2080386c-9c0c-46b0-9b2c-9066cb2c4808.png)
+
+### Motor speed
+
+![DC motor speed control](images/ec03c141-3927-4507-aeff-77bd019573fe.png)
+
+Packaged builds are available in [`appDownload/`](appDownload/). Build from
+source for the version described above.

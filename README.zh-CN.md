@@ -127,8 +127,20 @@ msbuild .\tests\PidLoop.RegressionTests\PidLoop.RegressionTests.csproj /restore 
 
 PID 算法已封装；若用于工程项目，因使用本项目产生的任何问题，作者均不承担责任。
 
-## 界面与历史版本
+## 软件截图
 
-下图为早期水箱界面，供参考。当前源码包含三个场景；[`appDownload/`](appDownload/) 中的压缩包为历史版本，当前版本请从源码编译。
+以下分别展示水箱液位、烤箱温控和电机转速三个场景。水箱截图来自早期版本。
 
-![早期水箱界面](images/721241288046b1016de9a5e5a07fe13deb39b28565e1c7d2a3a5f6a3f9c3c87f.jpg)
+### 水箱液位
+
+![水箱液位控制，早期界面](images/721241288046b1016de9a5e5a07fe13deb39b28565e1c7d2a3a5f6a3f9c3c87f.jpg)
+
+### 烤箱温控
+
+![烤箱温控：开门时触发加热联锁](images/2080386c-9c0c-46b0-9b2c-9066cb2c4808.png)
+
+### 电机转速
+
+![直流电机 PID 转速控制](images/ec03c141-3927-4507-aeff-77bd019573fe.png)
+
+已打包版本位于 [`appDownload/`](appDownload/)；本文所述版本请从源码编译。
